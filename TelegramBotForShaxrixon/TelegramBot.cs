@@ -59,7 +59,7 @@ namespace TelegramBotForShaxrixon
         static async void Message(MessageEventArgs e)
         {
             var chat = ClientService.GetByChatId(e.Message.Chat.Id);
-            Stream read = File.OpenRead("dry.mp4");
+            //Stream read = File.OpenRead("dry.mp4");
             if (e.Message.Location != null)
             {
                 SendToCompany(e);
@@ -68,11 +68,12 @@ namespace TelegramBotForShaxrixon
             {
                 CompanyService.AddOrUpdate(new Company() { ChatId = e.Message.Chat.Id, Name = "Test1" });
             }
-            else if (e.Message.Text == "/start" && chat==null)
+            else if (e.Message.Text == "/start" && chat == null || chat == null)
             {
-                Bot.SendVideoAsync(e.Message.Chat.Id, video: read, caption: "Dry car washing");
+                //Bot.SendVideoAsync(e.Message.Chat.Id, video: read, caption: "Dry car washing");
                 ClientService.AddOrUpdate(new Client() { ChatId = e.Message.Chat.Id });
-                Bot.SendTextMessageAsync(e.Message.Chat.Id, "Assalom alekum Dry Car Washing hush kelibsiz. Iltimos Ismingizni yozing");
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, "Assalom alekum Dry Car Washing hush kelibsiz. ");
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos Ismingizni yozing");
             }
             else if (chat.Name == null)
             {
@@ -92,7 +93,7 @@ namespace TelegramBotForShaxrixon
                 {
                     Bot.SendTextMessageAsync(e.Message.From.Id, $"iltimos telefon raqamingizni to'g'ri kiriting.  Misol uchun 901234567");
                 }
-                
+
             }
             else
             {
@@ -120,11 +121,11 @@ namespace TelegramBotForShaxrixon
                 Bot.SendTextMessageAsync(e.Message.Chat.Id, $"Klient- {client.Name} Telefon nomeri- {client.Phone} Hizmat- {service.Name}  Hizmat narxi - {service.Price}" + " Tez orada sizga qo'ng'iroq qilishadi", replyMarkup: inline);
                 orders.Remove(order);
             }
-            else 
+            else
             {
                 InliniButtonForServices(e);
             }
-            
+
 
 
         }
@@ -136,7 +137,7 @@ namespace TelegramBotForShaxrixon
                 inlines.Add(new[] { InlineKeyboardButton.WithCallbackData($"{ services[i].Name } - {services[i].Price}", services[i].Id.ToString()) });
 
             var inlineKeyboard = new InlineKeyboardMarkup(inlines);
-            Bot.SendTextMessageAsync(e.Message.Chat.Id, "Kerakli hizmatni tanlang!", replyMarkup: inlineKeyboard);
+            Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos xizmat turini tanlang", replyMarkup: inlineKeyboard);
         }
         private static void InliniButtonForServices(CallbackQueryEventArgs e)
         {
@@ -146,7 +147,7 @@ namespace TelegramBotForShaxrixon
                 inlines.Add(new[] { InlineKeyboardButton.WithCallbackData($"{ services[i].Name } - {services[i].Price}", services[i].Id.ToString()) });
 
             var inlineKeyboard = new InlineKeyboardMarkup(inlines);
-            Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, "Kerakli hizmatni tanlang!", replyMarkup: inlineKeyboard);
+            Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, "Iltimos xizmat turini tanlang", replyMarkup: inlineKeyboard);
         }
     }
 }
