@@ -139,7 +139,7 @@ namespace TelegramBotForShaxrixon
             var inlineKeyboard = new InlineKeyboardMarkup(inlines);
             Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos xizmat turini tanlang", replyMarkup: inlineKeyboard);
         }
-        private static void InliniButtonForServices(CallbackQueryEventArgs e)
+        private static void InliniButtonForServices(CallbackQueryEventArgs e) 
         {
             var services = ServicesssDoService.GetAll();
             var inlines = new List<InlineKeyboardButton[]>();
