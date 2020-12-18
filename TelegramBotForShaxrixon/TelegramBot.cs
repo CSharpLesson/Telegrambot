@@ -69,7 +69,7 @@ namespace TelegramBotForShaxrixon
             else if (e.Message.Text == "/admin")
             {
                 CompanyService.AddOrUpdate(new Company() { ChatId = e.Message.Chat.Id, Name = "Test1" });
-            }
+            } 
             else if (e.Message.Text == "/start" && chat == null || chat == null)
             {
                 //Bot.SendVideoAsync(e.Message.Chat.Id, video: read, caption: "Dry car washing");
