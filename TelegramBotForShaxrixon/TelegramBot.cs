@@ -55,7 +55,7 @@ namespace TelegramBotForShaxrixon
         private static void Bot_OnMessage(object sender, MessageEventArgs e)
         {
             Message(e);
-        }
+        } 
 
         static async void Message(MessageEventArgs e)
         {
