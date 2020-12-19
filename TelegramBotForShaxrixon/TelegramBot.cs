@@ -46,7 +46,8 @@ namespace TelegramBotForShaxrixon
                         {
                             new KeyboardButton("Location") { RequestLocation = true } //keyboard bilan locationi qabul qilinvotdi
                         });
-                Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, "Locationi tanlang", ParseMode.Default, false, false, 0, RequestReplyKeyboard);
+                Bot.EditMessageTextAsync(e.CallbackQuery.From.Id,messageId:e.CallbackQuery.Message.MessageId, "Locationi tanlang");
+                Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, "⬇️⬇️⬇️", ParseMode.Default, false, false, 0, RequestReplyKeyboard);
             }
 
         }
@@ -54,20 +55,21 @@ namespace TelegramBotForShaxrixon
         private static void Bot_OnMessage(object sender, MessageEventArgs e)
         {
             Message(e);
-        }
+        } 
 
         static async void Message(MessageEventArgs e)
         {
             var chat = ClientService.GetByChatId(e.Message.Chat.Id);
+            var order = orders.FirstOrDefault(f => f.ChatId == e.Message.Chat.Id);
             //Stream read = File.OpenRead("dry.mp4");
-            if (e.Message.Location != null)
+            if (e.Message.Location != null && chat != null && order !=null)
             {
                 SendToCompany(e);
             }
             else if (e.Message.Text == "/admin")
             {
                 CompanyService.AddOrUpdate(new Company() { ChatId = e.Message.Chat.Id, Name = "Test1" });
-            }
+            }  
             else if (e.Message.Text == "/start" && chat == null || chat == null)
             {
                 //Bot.SendVideoAsync(e.Message.Chat.Id, video: read, caption: "Dry car washing");
@@ -79,7 +81,7 @@ namespace TelegramBotForShaxrixon
             {
                 ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = e.Message.Text, ChatId = e.Message.Chat.Id });
                 var chatName = ClientService.GetByChatId(e.Message.Chat.Id).Name;
-                Bot.SendTextMessageAsync(e.Message.From.Id, $"{chatName} iltimos telefon raqamingizni kiriting. Misol uchun 901234567 ");
+                Bot.SendTextMessageAsync(e.Message.From.Id, $"{chatName} iltimos telefon raqamingizni kiriting. Masalan 901234567 ");
             }
             else if (chat.Phone == null)
             {
@@ -91,7 +93,7 @@ namespace TelegramBotForShaxrixon
                 }
                 catch (Exception ex)
                 {
-                    Bot.SendTextMessageAsync(e.Message.From.Id, $"iltimos telefon raqamingizni to'g'ri kiriting.  Misol uchun 901234567");
+                    Bot.SendTextMessageAsync(e.Message.From.Id, $"Iltimos telefon raqamingizni to'g'ri kiriting.  Masalan 901234567");
                 }
 
             }
@@ -108,6 +110,7 @@ namespace TelegramBotForShaxrixon
             var service = new Servicess();
             if (order != null)
             {
+                
                 service = ServicesssDoService.GetById(order.ServiceId);
                 var client = ClientService.GetByChatId(e.Message.Chat.Id);
                 OrdersService.AddOrUpdate(new Orders() { ChatId = order.ChatId, ServiceId = order.ServiceId, Longitude = e.Message.Location.Longitude, Lotetude = e.Message.Location.Latitude });
