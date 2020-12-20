@@ -29,5 +29,11 @@ namespace TelegramBotForShaxrixon.Model
         [Column("phone")]
         public string Phone { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        [Column("isedit")]
+        public bool? IsEdit { get; set; }
+
     }
 }
