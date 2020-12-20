@@ -53,6 +53,7 @@ namespace TelegramBotForShaxrixon
                 client.IsEdit = true;
                 client.Name = null;
                 ClientService.AddOrUpdate(client);
+                Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, "Iltimos Ismingizni yozing");
 
             }
             else if (e.CallbackQuery.Data == "changeClientNumber")
@@ -60,7 +61,8 @@ namespace TelegramBotForShaxrixon
                 var client = ClientService.GetByChatId(e.CallbackQuery.From.Id);
                 client.IsEdit = true;
                 client.Phone = null;
-                ClientService.AddOrUpdate(client); 
+                ClientService.AddOrUpdate(client);
+                Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, "Iltimos telefon raqamingizni kiriting. Masalan 901234567");
             }
             else if (e.CallbackQuery.Data == "setting")
             {
@@ -132,10 +134,8 @@ namespace TelegramBotForShaxrixon
                     var inline = new InlineKeyboardMarkup(new[] {
                           new[] { InlineKeyboardButton.WithCallbackData("Asosiy menyuga qaytish", "main") }
                      });
-                    Bot.AnswerCallbackQueryAsync(null,              
-                        text: "Hizmat muvofaqiyatli yakunlandi",
-                        showAlert: true);
-                    Bot.SendTextMessageAsync(e.Message.Chat.Id, "Tanlang", replyMarkup: inline);
+
+                    Bot.EditMessageTextAsync(e.Message.Chat.Id, messageId: e.Message.MessageId, "Xizmat yakunlandi", replyMarkup: inline);
                 }
             }
             else if (chat.Phone == null)
@@ -143,12 +143,7 @@ namespace TelegramBotForShaxrixon
                 try
                 {
                     var phone = Convert.ToInt32(e.Message.Text);
-                    ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = chat.Name, Phone = e.Message.Text, ChatId = e.Message.Chat.Id });
-                    if(chat.IsEdit==true)
-                        Bot.AnswerCallbackQueryAsync(null,
-                        text: "Hizmat muvofaqiyatli yakunlandi",
-                        showAlert: true);
-
+                    ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = chat.Name, Phone = e.Message.Text, ChatId = e.Message.Chat.Id, IsEdit = false });
                     Main(e);
                 }
                 catch (Exception ex)
