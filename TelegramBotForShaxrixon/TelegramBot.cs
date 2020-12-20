@@ -60,7 +60,7 @@ namespace TelegramBotForShaxrixon
                 var client = ClientService.GetByChatId(e.CallbackQuery.From.Id);
                 client.IsEdit = true;
                 client.Phone = null;
-                ClientService.AddOrUpdate(client);
+                ClientService.AddOrUpdate(client); 
             }
             else if (e.CallbackQuery.Data == "setting")
             {
