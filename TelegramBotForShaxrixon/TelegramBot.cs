@@ -95,7 +95,6 @@ namespace TelegramBotForShaxrixon
                 {
                     Bot.SendTextMessageAsync(e.Message.From.Id, $"Iltimos telefon raqamingizni to'g'ri kiriting.  Masalan 901234567");
                 }
-
             }
             else
             {
