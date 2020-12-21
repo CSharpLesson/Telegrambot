@@ -36,6 +36,18 @@ namespace TelegramBotForShaxrixon.Model
 
         /// <summary>
         /// 
+        /// </summary>
+        [Column("dateorder")]
+        public DateTime? DateOrder { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [Column("position")]
+        public int? Position { get; set; }
+
+        /// <summary>
+        /// 
         /// </summary>        
         [Column("service_id")]
         [ForeignKey("ServiceModel")]
