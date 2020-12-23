@@ -200,7 +200,7 @@ namespace TelegramBotForShaxrixon
         }
 
         private static void Main(CallbackQueryEventArgs e)
-        {
+        { 
             var inline = new InlineKeyboardMarkup(new[] {
                 new[] { InlineKeyboardButton.WithCallbackData("Buyurtma berish", "order")},
                 new[] { InlineKeyboardButton.WithCallbackData("Sozlamalar", "setting")}
