@@ -68,6 +68,10 @@ namespace TelegramBotForShaxrixon
             {
                 Settings(e);
             }
+            else if (e.CallbackQuery.Data == "setLang") 
+            {
+
+            }
             else if (e.CallbackQuery.Data == "main")
             {
                 Main(e);
