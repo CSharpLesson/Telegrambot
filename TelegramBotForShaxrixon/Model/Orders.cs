@@ -56,6 +56,5 @@ namespace TelegramBotForShaxrixon.Model
         [IgnoreDataMember]
         public virtual Servicess ServiceModel { get; set; }
 
-
     }
 }
