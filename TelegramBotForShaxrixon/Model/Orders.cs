@@ -48,6 +48,12 @@ namespace TelegramBotForShaxrixon.Model
 
         /// <summary>
         /// 
+        /// </summary>
+        [Column("count")]
+        public int Count { get; set; }
+
+        /// <summary>
+        /// 
         /// </summary>        
         [Column("service_id")]
         [ForeignKey("ServiceModel")]

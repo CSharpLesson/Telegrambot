@@ -14,9 +14,19 @@ namespace TelegramBotForShaxrixon.BotInlinesComponent
             try
             {
                 var inlines = new List<InlineKeyboardButton[]>();
-                foreach(var item in column.CallBacks)
-                    inlines.Add(new[] { InlineKeyboardButton.WithCallbackData($"{ item.CallBackName}", item.CallBackData) });
-
+                var model = column.CallBacks;
+                for (int i = 0; i < column.CallBacks.Count; i++)
+                {
+                    if (i + 1 >= model.Count)
+                    {
+                        inlines.Add(new[] { InlineKeyboardButton.WithCallbackData(model[i].CallBackName, model[i].CallBackData) });
+                    }
+                    else
+                    {
+                        inlines.Add(new[] { InlineKeyboardButton.WithCallbackData(model[i].CallBackName, model[i].CallBackData), InlineKeyboardButton.WithCallbackData(model[i + 1].CallBackName, model[i + 1].CallBackData) });
+                    }
+                    i++;
+                }
                 var inlineKeyboard = new InlineKeyboardMarkup(inlines);
                 bot.EditMessageTextAsync(column.ChatId, messageId: column.MessageId, column.TextMessage, replyMarkup: inlineKeyboard);
             }
@@ -26,6 +36,7 @@ namespace TelegramBotForShaxrixon.BotInlinesComponent
             }
             return true;
         }
+       
     }
 
     public class InlineColums

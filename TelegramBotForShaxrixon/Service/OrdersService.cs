@@ -45,6 +45,56 @@ namespace TelegramBotForShaxrixon.Service
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="chatId"></param>
+        /// <returns></returns>
+        public static Orders GetByPositionChatId(long chatId,int position)
+        {
+            try
+            {
+                return new DataContext().Orders.FirstOrDefault(f => f.ChatId == chatId && f.Position==position);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="chatId"></param>
+        /// <returns></returns>
+        public static List<Orders> GetAllByPositionChatId(long chatId, int position)
+        {
+            try
+            {
+                return new DataContext().Orders.Where(f => f.ChatId == chatId && f.Position == position).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="chatId"></param>
+        /// <returns></returns>
+        public static Orders GetByPositionChatIdService(long chatId, int position,int service)
+        {
+            try
+            {
+                return new DataContext().Orders.FirstOrDefault(f => f.ChatId == chatId && f.Position == position && f.ServiceId==service);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="model"></param>
         public static void AddOrUpdate(Orders model)
         {
