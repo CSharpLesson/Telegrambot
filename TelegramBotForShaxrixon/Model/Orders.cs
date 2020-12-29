@@ -57,7 +57,7 @@ namespace TelegramBotForShaxrixon.Model
         /// </summary>        
         [Column("service_id")]
         [ForeignKey("ServiceModel")]
-        public int ServiceId { get; set; }
+        public int? ServiceId { get; set; }
 
         [IgnoreDataMember]
         public virtual Servicess ServiceModel { get; set; }

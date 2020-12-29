@@ -55,7 +55,7 @@ namespace TelegramBotForShaxrixon
                 {
                     var RequestReplyKeyboard = new ReplyKeyboardMarkup(new[]// bu yerda location qabul qilish ishlatilvotdi
                             {
-                            new KeyboardButton("Location") { RequestLocation = true } //keyboard bilan locationi qabul qilinvotdi
+                            new KeyboardButton("📍 Location") { RequestLocation = true } //keyboard bilan locationi qabul qilinvotdi
                         });
                     RequestReplyKeyboard.ResizeKeyboard = true;
                     Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, "Locationi tanlang");
@@ -65,7 +65,7 @@ namespace TelegramBotForShaxrixon
                 {
                     Bot.AnswerCallbackQueryAsync(
                                     callbackQueryId: e.CallbackQuery.Id,
-                                    text: "Hozircha hech qanaqa",
+                                    text: "Hozircha hech qanaqa hizmatni tanlamadis",
                                     showAlert: false);
                 }
             }
@@ -105,6 +105,9 @@ namespace TelegramBotForShaxrixon
             }
             else if (e.CallbackQuery.Data == "takeorder")
             {
+                Bot.AnswerCallbackQueryAsync(callbackQueryId: e.CallbackQuery.Id,
+                text: "",
+                showAlert: false);
                 InliniButtonForServices(e);
             }
             else if (e.CallbackQuery.Data == "nothing") { }
@@ -123,7 +126,7 @@ namespace TelegramBotForShaxrixon
                 var service = ServicesssDoService.GetById(Convert.ToInt32(e.CallbackQuery.Data));
                 var inline = new InlineKeyboardMarkup(new[] {
                 new[] { InlineKeyboardButton.WithCallbackData("➕", $"+_{service.Id}"),InlineKeyboardButton.WithCallbackData($"{service.Name}", "nothing"),InlineKeyboardButton.WithCallbackData($"➖", $"-_{service.Id}"),},
-                new[]{ InlineKeyboardButton.WithCallbackData("Buyurtmani tasdiqlash","takeorder") }
+                new[]{ InlineKeyboardButton.WithCallbackData("", "takeorder") }
                 });
                 Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, $"Tanlangan {count}", replyMarkup: inline);
             }
@@ -191,7 +194,7 @@ Raqamni 901234567 shaklida yuboring.";
                     var secondmessage = @"Telefon raqam noto'g'ri kiritildi
 
 Raqamni 901234567 shaklida yuboring.";
-                    Bot.SendTextMessageAsync(e.Message.From.Id, $"Iltimos telefon raqamingizni to'g'ri kiriting.  Masalan 901234567");
+                    Bot.SendTextMessageAsync(e.Message.From.Id, secondmessage);
                 }
             }
             else
@@ -203,34 +206,46 @@ Raqamni 901234567 shaklida yuboring.";
         private static void SendToCompany(MessageEventArgs e)
         {
 
-            var order = OrdersService.GetByPositionChatId(e.Message.From.Id, 1);
-            var service = new Servicess();
-            if (order != null)
+            var orders = OrdersService.GetByPositionChatIdDate(e.Message.From.Id, 1);
+            if (orders != null)
             {
-
-                service = ServicesssDoService.GetById(order.ServiceId);
+                double allsum = 0;
+                var ordersText = @"";
                 var client = ClientService.GetByChatId(e.Message.Chat.Id);
-                OrdersService.AddOrUpdate(new Orders() { Id = order.Id, ChatId = order.ChatId, ServiceId = order.ServiceId, Longitude = e.Message.Location.Longitude, Lotetude = e.Message.Location.Latitude, Position = 2, DateOrder = order.DateOrder, Count = order.Count });
+                foreach (var order in orders)
+                {
+                    allsum = allsum + (order.ServiceModel?.Price * order.Count).Value;
+                    ordersText = ordersText + @"
+" + order.ServiceModel?.Name + @"
+   " + order.ServiceModel?.Name + " " + order.Count + " x" + " " + order.ServiceModel?.Price + "=" + (order.ServiceModel?.Price * order.Count) + @"
+
+";
+                    OrdersService.AddOrUpdate(new Orders() { Id = order.Id, ChatId = order.ChatId, ServiceId = order.ServiceId, Longitude = e.Message.Location.Longitude, Lotetude = e.Message.Location.Latitude, Position = 2, DateOrder = order.DateOrder, Count = order.Count });
+                }
+                ordersText = ordersText + @"------
+Umumiy: " + allsum + " so'm";
                 var companys = CompanyService.GetAll();
                 foreach (var item in companys)
                 {
-                    Bot.SendTextMessageAsync(item.ChatId, $"Klient- {client.Name} Telefon nomeri- {client.Phone} Hizmat- {service.Name}  Hizmat narxi - {service.Price}");
+                    ordersText = $"Klient- {client.Name} Telefon nomeri- {client.Phone}" + @"
+" + ordersText;
+                    Bot.SendTextMessageAsync(item.ChatId, ordersText);
                     Bot.SendLocationAsync(item.ChatId, e.Message.Location.Latitude, e.Message.Location.Longitude);
                 }
-                var inline = new InlineKeyboardMarkup(new[] { new[] { InlineKeyboardButton.WithCallbackData("Yana so'rov qoldirish", "order") } });
-                Bot.SendTextMessageAsync(e.Message.Chat.Id, $"Klient- {client.Name} Telefon nomeri- {client.Phone} Hizmat- {service.Name}  Hizmat narxi - {service.Price}" + " Tez orada sizga qo'ng'iroq qilishadi", replyMarkup: inline);
-                orders.Remove(order);
+                var inline = new InlineKeyboardMarkup(new[] { new[] { InlineKeyboardButton.WithCallbackData("🧾 Yana Buyurtma berish", "takeorder") } });
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, ordersText, replyMarkup: inline);
+                
             }
             else
             {
                 InliniButtonForServices(e);
             }
-
-
-
         }
         private static void InliniButtonForServices(MessageEventArgs e)
         {
+            double allsum = 0;
+            var ordersText = @"";
+            var orders = OrdersService.GetByPositionChatIdDate(e.Message.Chat.Id, 1);
             var services = ServicesssDoService.GetAll();
             var inlines = new List<InlineKeyboardButton[]>();
             for (int i = 0; i < services.Count; i++)
@@ -245,9 +260,26 @@ Raqamni 901234567 shaklida yuboring.";
                 }
                 i++;
             }
-            inlines.Add(new[] { InlineKeyboardButton.WithCallbackData("Buyurtma berish", "order") });
+            inlines.Add(new[] { InlineKeyboardButton.WithCallbackData("🧾 Buyurtmani tasdiqlash", "order") });
             var inlineKeyboard = new InlineKeyboardMarkup(inlines);
-            Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos xizmat turini tanlang", replyMarkup: inlineKeyboard);
+            if (orders.Count() == 0)
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos xizmat turini tanlang", replyMarkup: inlineKeyboard);
+            else
+            {
+                foreach (var item in orders)
+                {
+                    allsum = allsum + (item.ServiceModel?.Price * item.Count).Value;
+                    ordersText = ordersText + @"
+" + item.ServiceModel?.Name + @"
+   " + item.ServiceModel?.Name + " " + item.Count + " x" + " " + item.ServiceModel?.Price + "=" + (item.ServiceModel?.Price * item.Count) + @"
+
+";
+                }
+                ordersText = ordersText + @"------
+Umumiy: " + allsum + " so'm";
+
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, ordersText, replyMarkup: inlineKeyboard);
+            }
         }
         private static void InliniButtonForServices(CallbackQueryEventArgs e)
         {
@@ -265,7 +297,7 @@ Raqamni 901234567 shaklida yuboring.";
                 }
                 i++;
             }
-            inlines.Add(new[] { InlineKeyboardButton.WithCallbackData("Buyurtma berish", "order") });
+            inlines.Add(new[] { InlineKeyboardButton.WithCallbackData("🧾 Buyurtmani tasdiqlash", "order") });
 
             var inlineKeyboard = new InlineKeyboardMarkup(inlines);
             Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, "Iltimos xizmat turini tanlang", replyMarkup: inlineKeyboard);
