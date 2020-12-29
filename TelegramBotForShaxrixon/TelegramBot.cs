@@ -106,7 +106,7 @@ namespace TelegramBotForShaxrixon
             else if (e.CallbackQuery.Data == "takeorder")
             {
                 Bot.AnswerCallbackQueryAsync(callbackQueryId: e.CallbackQuery.Id,
-                text: "",
+                text: "Done",
                 showAlert: false);
                 InliniButtonForServices(e);
             }
@@ -123,6 +123,7 @@ namespace TelegramBotForShaxrixon
             }
             else
             {
+                 count = OrdersService.GetByPositionChatIdService(e.CallbackQuery.From.Id, 1, Convert.ToInt32(e.CallbackQuery.Data)).Count;
                 var service = ServicesssDoService.GetById(Convert.ToInt32(e.CallbackQuery.Data));
                 var inline = new InlineKeyboardMarkup(new[] {
                 new[] { InlineKeyboardButton.WithCallbackData("➕", $"+_{service.Id}"),InlineKeyboardButton.WithCallbackData($"{service.Name}", "nothing"),InlineKeyboardButton.WithCallbackData($"➖", $"-_{service.Id}"),},
@@ -243,9 +244,13 @@ Umumiy: " + allsum + " so'm";
         }
         private static void InliniButtonForServices(MessageEventArgs e)
         {
+            InliniButtonForServices(e.Message.Chat.Id);
+        }
+        private static void InliniButtonForServices(long chatId)         
+        {
             double allsum = 0;
             var ordersText = @"";
-            var orders = OrdersService.GetByPositionChatIdDate(e.Message.Chat.Id, 1);
+            var orders = OrdersService.GetByPositionChatIdDate(chatId, 1);
             var services = ServicesssDoService.GetAll();
             var inlines = new List<InlineKeyboardButton[]>();
             for (int i = 0; i < services.Count; i++)
@@ -263,7 +268,7 @@ Umumiy: " + allsum + " so'm";
             inlines.Add(new[] { InlineKeyboardButton.WithCallbackData("🧾 Buyurtmani tasdiqlash", "order") });
             var inlineKeyboard = new InlineKeyboardMarkup(inlines);
             if (orders.Count() == 0)
-                Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos xizmat turini tanlang", replyMarkup: inlineKeyboard);
+                Bot.SendTextMessageAsync(chatId, "Iltimos xizmat turini tanlang", replyMarkup: inlineKeyboard);
             else
             {
                 foreach (var item in orders)
@@ -278,29 +283,12 @@ Umumiy: " + allsum + " so'm";
                 ordersText = ordersText + @"------
 Umumiy: " + allsum + " so'm";
 
-                Bot.SendTextMessageAsync(e.Message.Chat.Id, ordersText, replyMarkup: inlineKeyboard);
+                Bot.SendTextMessageAsync(chatId, ordersText, replyMarkup: inlineKeyboard);
             }
         }
         private static void InliniButtonForServices(CallbackQueryEventArgs e)
         {
-            var services = ServicesssDoService.GetAll();
-            var inlines = new List<InlineKeyboardButton[]>();
-            for (int i = 0; i < services.Count; i++)
-            {
-                if (i + 1 >= services.Count)
-                {
-                    inlines.Add(new[] { InlineKeyboardButton.WithCallbackData($"{ services[i].Name } - {services[i].Price}", services[i].Id.ToString()) });
-                }
-                else
-                {
-                    inlines.Add(new[] { InlineKeyboardButton.WithCallbackData($"{ services[i].Name } - {services[i].Price}", services[i].Id.ToString()), InlineKeyboardButton.WithCallbackData($"{ services[i + 1].Name } - {services[i + 1].Price}", services[i + 1].Id.ToString()) });
-                }
-                i++;
-            }
-            inlines.Add(new[] { InlineKeyboardButton.WithCallbackData("🧾 Buyurtmani tasdiqlash", "order") });
-
-            var inlineKeyboard = new InlineKeyboardMarkup(inlines);
-            Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, "Iltimos xizmat turini tanlang", replyMarkup: inlineKeyboard);
+            InliniButtonForServices(e.CallbackQuery.From.Id);
         }
     }
 }

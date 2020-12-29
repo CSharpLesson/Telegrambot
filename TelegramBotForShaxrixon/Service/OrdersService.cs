@@ -85,7 +85,8 @@ namespace TelegramBotForShaxrixon.Service
         {
             try
             {
-                return new DataContext().Orders.FirstOrDefault(f => f.ChatId == chatId && f.Position == position && f.ServiceId == service);
+                var date = DateTime.Now;
+                return new DataContext().Orders.FirstOrDefault(f => f.ChatId == chatId && f.Position == position && f.ServiceId == service && f.DateOrder.Value.Day == date.Day && f.DateOrder.Value.Month == date.Month);
             }
             catch (Exception ex)
             {
