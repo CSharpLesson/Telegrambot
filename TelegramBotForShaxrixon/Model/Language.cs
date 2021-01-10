@@ -5,26 +5,24 @@ using System.Text;
 
 namespace TelegramBotForShaxrixon.Model
 {
-    [Table("services")]
-    public class Servicess
+    [Table("language")]
+    public class Language
     {
-
         /// <summary>
         /// 
         /// </summary>
         [Column("id")]
         public int Id { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        [Column("chatid")]
+        public long ChatId { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        [Column("name")]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        [Column("price")]
-        public double? Price { get; set; }
+        [Column("language_id")]
+        public int LanguageId { get; set; }
     }
 }

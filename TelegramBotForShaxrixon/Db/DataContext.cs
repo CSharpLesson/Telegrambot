@@ -36,5 +36,10 @@ namespace TelegramBotForShaxrixon.Db
         /// 
         /// </summary>
         public DbSet<Orders> Orders { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public DbSet<Language> Languages { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using TelegramBotForShaxrixon.Db;
 using TelegramBotForShaxrixon.Model;
 
@@ -14,11 +15,11 @@ namespace TelegramBotForShaxrixon.Service
         /// 
         /// </summary>
         /// <returns></returns>
-        public static List<Orders> GetAll()
+        public async static Task<List<Orders>> GetAll()
         {
             try
             {
-                return new DataContext().Orders.ToList();
+                return await new  DataContext().Orders.ToListAsync();
             }
             catch (Exception ex)
             {
@@ -31,11 +32,11 @@ namespace TelegramBotForShaxrixon.Service
         /// </summary>
         /// <param name="chatId"></param>
         /// <returns></returns>
-        public static Orders GetByChatId(long chatId)
+        public async static Task<Orders> GetByChatId(long chatId)
         {
             try
             {
-                return new DataContext().Orders.FirstOrDefault(f => f.ChatId == chatId);
+                return await new DataContext().Orders.FirstOrDefaultAsync(f => f.ChatId == chatId);
             }
             catch (Exception ex)
             {
@@ -48,11 +49,11 @@ namespace TelegramBotForShaxrixon.Service
         /// </summary>
         /// <param name="chatId"></param>
         /// <returns></returns>
-        public static Orders GetByPositionChatId(long chatId, int position)
+        public async static  Task<Orders> GetByPositionChatId(long chatId, int position)
         {
             try
             {
-                return new DataContext().Orders.FirstOrDefault(f => f.ChatId == chatId && f.Position == position);
+                return await new DataContext().Orders.FirstOrDefaultAsync(f => f.ChatId == chatId && f.Position == position);
             }
             catch (Exception ex)
             {
@@ -64,11 +65,11 @@ namespace TelegramBotForShaxrixon.Service
         /// </summary>
         /// <param name="chatId"></param>
         /// <returns></returns>
-        public static List<Orders> GetAllByPositionChatId(long chatId, int position)
+        public  async static Task<List<Orders>> GetAllByPositionChatId(long chatId, int position)
         {
             try
             {
-                return new DataContext().Orders.Where(f => f.ChatId == chatId && f.Position == position).ToList();
+                return  await new DataContext().Orders.Where(f => f.ChatId == chatId && f.Position == position).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -81,31 +82,31 @@ namespace TelegramBotForShaxrixon.Service
         /// </summary>
         /// <param name="chatId"></param>
         /// <returns></returns>
-        public static Orders GetByPositionChatIdService(long chatId, int position, int service)
+        public async static Task<Orders> GetByPositionChatIdService(long chatId, int position, int service)
+        {
+            try
+            {
+                var date = DateTime.Now;                
+                  return  await new DataContext().Orders.FirstOrDefaultAsync(f => f.ChatId == chatId && f.Position == position && f.ServiceId == service && f.DateOrder.Value.Day == date.Day && f.DateOrder.Value.Month == date.Month);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="chatId"></param>
+        /// <returns></returns>
+        public async static Task<List<Orders>> GetByPositionChatIdDate(long chatId, int position)
         {
             try
             {
                 var date = DateTime.Now;
-                return new DataContext().Orders.FirstOrDefault(f => f.ChatId == chatId && f.Position == position && f.ServiceId == service && f.DateOrder.Value.Day == date.Day && f.DateOrder.Value.Month == date.Month);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="chatId"></param>
-        /// <returns></returns>
-        public static List<Orders> GetByPositionChatIdDate(long chatId, int position)
-        {
-            try
-            {
-                var date = DateTime.Now;
-                return new DataContext().Orders.Where(f => f.ChatId == chatId && f.Position == position &&f.DateOrder.Value.Day==date.Day && f.DateOrder.Value.Month == date.Month)
-                                               .Include(c=>c.ServiceModel).ToList();
+                return await new DataContext().Orders.Where(f => f.ChatId == chatId && f.Position == position &&f.DateOrder.Value.Day==date.Day && f.DateOrder.Value.Month == date.Month)
+                                               .Include(c=>c.ServiceModel).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -117,7 +118,7 @@ namespace TelegramBotForShaxrixon.Service
         /// 
         /// </summary>
         /// <param name="model"></param>
-        public static void AddOrUpdate(Orders model)
+        public async static Task AddOrUpdate(Orders model)
         {
             try
             {

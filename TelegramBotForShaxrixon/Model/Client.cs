@@ -32,8 +32,14 @@ namespace TelegramBotForShaxrixon.Model
         /// <summary>
         /// 
         /// </summary>
-        [Column("isedit")]
-        public bool? IsEdit { get; set; }
+        [Column("isactive")]
+        public bool? IsActive { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [Column("generatecode")]
+        public int? GenerateCode { get; set; }
 
     }
 }
