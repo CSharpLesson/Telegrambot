@@ -49,8 +49,8 @@ namespace TelegramBotForShaxrixon
 
                 if (e.CallbackQuery.Data == "order")
                 {
-
-                    if (OrdersService.GetByPositionChatId(e.CallbackQuery.From.Id, 1) != null)
+                    var order= await OrdersService.GetByPositionChatId(e.CallbackQuery.From.Id, 1);
+                    if ( order!= null && order.Count>0)
                     {
                         var RequestReplyKeyboard = new ReplyKeyboardMarkup(new[]
                                 {
@@ -156,9 +156,9 @@ namespace TelegramBotForShaxrixon
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine(ex);                        
+                        Console.WriteLine(ex);
                     }
-                    
+
                 }
             }
 
@@ -183,7 +183,7 @@ namespace TelegramBotForShaxrixon
 
         private static void Bot_OnMessage(object sender, MessageEventArgs e)
         {
-            Task.Run(()=> Message(e));
+            Task.Run(() => Message(e));
         }
 
         static async Task Message(MessageEventArgs e)
@@ -254,7 +254,7 @@ namespace TelegramBotForShaxrixon
                     await Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos kodni kiriting!");
                     SendSMSForClient(e);
                 }
-                catch 
+                catch
                 {
                     var secondmessage = "Telefon raqam noto'g'ri kiritildi \n Raqamni 901234567 shaklida yuboring!";
                     await Bot.SendTextMessageAsync(e.Message.From.Id, secondmessage);
@@ -342,7 +342,7 @@ namespace TelegramBotForShaxrixon
                     var inline = new InlineKeyboardMarkup(new[] { new[] { InlineKeyboardButton.WithCallbackData("Ish yakunlandi", "done") } });
                     await Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, ordersText, replyMarkup: inline);
 
-                } 
+                }
                 else
                 {
                     await InliniButtonForServices(e);
@@ -385,7 +385,7 @@ namespace TelegramBotForShaxrixon
         }
         private async static Task InliniButtonForServices(MessageEventArgs e)
         {
-            await Task.Run(()=>InliniButtonForServices(e.Message.Chat.Id));
+            await Task.Run(() => InliniButtonForServices(e.Message.Chat.Id));
         }
         private async static void InliniButtonForServices(long chatId)
         {
@@ -432,7 +432,35 @@ namespace TelegramBotForShaxrixon
         }
         private async static Task InliniButtonForServices(CallbackQueryEventArgs e)
         {
-            await Task.Run(() => InliniButtonForServices(e.CallbackQuery.From.Id));
+            var order = await OrdersService.GetByPositionChatId(e.CallbackQuery.From.Id, 2);
+            if (order == null)
+                await Task.Run(() => InliniButtonForServices(e.CallbackQuery.From.Id));
+            else 
+            {
+                 await Task.Run(() =>IshTugadimi(e));
+            }
+        }
+
+
+        private async static Task IshTugadimi(CallbackQueryEventArgs e) 
+        {
+            var lang = new DataContext().Languages.FirstOrDefault(f => f.ChatId == e.CallbackQuery.From.Id);
+            var langId = lang != null ? lang.LanguageId : 1;
+            double allsum = 0;
+            var ordersText = @"";
+            string umumiy = langId == 1 ? "Umumiy xisob" : "Общий счет";
+            var orders = await OrdersService.GetByPositionChatIdDate(e.CallbackQuery.From.Id, 2);
+            foreach (var item in orders)
+            {
+                allsum = allsum + (item.ServiceModel?.Price * item.Count).Value;
+                ordersText = ordersText + @"
+" + item.ServiceModel?.Name + @"
+   " + item.ServiceModel?.Name + " " + item.Count + " x" + " " + item.ServiceModel?.Price + "=" + (item.ServiceModel?.Price * item.Count) + @"
+
+";
+            }
+            var inline = new InlineKeyboardMarkup(new[] { new[] { InlineKeyboardButton.WithCallbackData("Ish yakunlandi", "done") } });
+            await Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, ordersText, replyMarkup: inline);
         }
 
         private static void CallbackLang(MessageEventArgs e)
@@ -476,7 +504,7 @@ namespace TelegramBotForShaxrixon
                 }
             });
 
-             await InliniButtonForServices(e);
+            await InliniButtonForServices(e);
 
         }
 
