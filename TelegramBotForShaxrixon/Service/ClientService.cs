@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using TelegramBotForShaxrixon.Db;
 using TelegramBotForShaxrixon.Model;
 
@@ -32,11 +34,11 @@ namespace TelegramBotForShaxrixon.Service
         /// </summary>
         /// <param name="chatId"></param>
         /// <returns></returns>
-        public static Client GetByChatId(long chatId)
+        public  async static Task<Client> GetByChatId(long chatId)
         {
             try
-            {
-                return new DataContext().Clients.FirstOrDefault(f => f.ChatId == chatId);
+            {               
+                 return await new DataContext().Clients.FirstOrDefaultAsync(f => f.ChatId == chatId);
             }
             catch (Exception ex)
             {
@@ -60,13 +62,13 @@ namespace TelegramBotForShaxrixon.Service
         /// 
         /// </summary>
         /// <param name="model"></param>
-        public static void AddOrUpdate(Client model) 
+        public async static Task AddOrUpdate(Client model) 
         {
             try
             {
                 DataContext context = new DataContext();
                 context.Clients.Update(model);
-                context.SaveChanges();
+                await context.SaveChangesAsync();
                 
 
             }

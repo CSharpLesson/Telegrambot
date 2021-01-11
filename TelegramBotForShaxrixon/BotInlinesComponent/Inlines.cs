@@ -28,7 +28,7 @@ namespace TelegramBotForShaxrixon.BotInlinesComponent
                     i++;
                 }
                 var inlineKeyboard = new InlineKeyboardMarkup(inlines);
-                bot.EditMessageTextAsync(column.ChatId, messageId: column.MessageId, column.TextMessage, replyMarkup: inlineKeyboard);
+                await bot.EditMessageTextAsync(column.ChatId, messageId: column.MessageId, column.TextMessage, replyMarkup: inlineKeyboard);
             }
             catch (Exception ex)
             {

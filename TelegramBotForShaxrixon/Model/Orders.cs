@@ -26,13 +26,13 @@ namespace TelegramBotForShaxrixon.Model
         /// 
         /// </summary>
         [Column("longitude")]
-        public float? Longitude { get; set; }
+        public string Longitude { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         [Column("lotetude")]
-        public float? Lotetude { get; set; }
+        public string Lotetude { get; set; }
 
         /// <summary>
         /// 
