@@ -326,7 +326,7 @@ namespace TelegramBotForShaxrixon
                     var inline = new InlineKeyboardMarkup(new[] { new[] { InlineKeyboardButton.WithCallbackData("Ish yakunlandi", "done") } });
                     await Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, ordersText, replyMarkup: inline);
 
-                }
+                } 
                 else
                 {
                     await InliniButtonForServices(e);
