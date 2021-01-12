@@ -66,11 +66,12 @@ namespace TelegramBotForShaxrixon.Service
         {
             try
             {
-                DataContext context = new DataContext();
-                context.Clients.Update(model);
-                await context.SaveChangesAsync();
-                
-
+                await Task.Run(() => 
+                {
+                    DataContext context = new DataContext();
+                    context.Clients.Update(model);
+                    context.SaveChanges();
+                });
             }
             catch (Exception ex)
             {

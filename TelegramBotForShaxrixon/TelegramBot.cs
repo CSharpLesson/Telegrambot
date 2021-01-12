@@ -332,7 +332,7 @@ namespace TelegramBotForShaxrixon
                     string card = langId == 1 ? "💳 Karta raqam orqali to'lash" : "💳 Оплата по номеру карты";
                     string cardNum = langId == 1 ? "Karta raqam:" : "Номер карты:";
                     var texts = e.CallbackQuery.Data == "paynaqt" ? "💵 Naqt to'lash" : "💳 Karta raqam orqali to'lash";
-                    var textForClient = e.CallbackQuery.Data == "paynaqt" ? "" : " 8600455500005555";
+                    var textForClient = e.CallbackQuery.Data == "paynaqt" ? "" : " 8600490434806402";
                     double allsum = 0;
                     var ordersText = "";
                     var client = await ClientService.GetByChatId(e.CallbackQuery.From.Id);
