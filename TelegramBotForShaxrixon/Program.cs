@@ -7,7 +7,9 @@ namespace TelegramBotForShaxrixon
         static void Main(string[] args)
         {
             TelegramBot.Start();
+            Console.WriteLine("Bot yoqildi");
             Console.ReadLine();
+            Console.WriteLine("Bot Ochdi");
         }
     }
 }
