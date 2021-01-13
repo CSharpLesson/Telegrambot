@@ -45,7 +45,7 @@ namespace TelegramBotForShaxrixon
                     {
                         await Bot.AnswerCallbackQueryAsync(
                     callbackQueryId: e.CallbackQuery.Id,
-                    text: "Jo'natildi",
+                    text: langId==1? "Jo'natildi": "Отправлено",
                     showAlert: false);
                     }
                     catch { }
@@ -60,7 +60,7 @@ namespace TelegramBotForShaxrixon
                         {
                             var RequestReplyKeyboard = new ReplyKeyboardMarkup(new[]
                                {
-                            new KeyboardButton("📍 Location") { RequestLocation = true }
+                            new KeyboardButton(langId==1?"📍 Geolokatsiyani yuboring":"📍 Отправить геолокацию") { RequestLocation = true }
                         });
                             RequestReplyKeyboard.ResizeKeyboard = true;
 
@@ -71,7 +71,7 @@ namespace TelegramBotForShaxrixon
                         {
                             await Bot.AnswerCallbackQueryAsync(
                                         callbackQueryId: e.CallbackQuery.Id,
-                                        text: "Hozircha hech qanaqa hizmatni tanlamadis",
+                                        text: langId==1?"Hozircha hech qanaqa hizmatni tanlamadingiz!": "Вы еще не выбрали ни одной услуги!",
                                         showAlert: true, cacheTime: 4);
                         }
 
@@ -80,7 +80,7 @@ namespace TelegramBotForShaxrixon
                     {
                         await Bot.AnswerCallbackQueryAsync(
                                         callbackQueryId: e.CallbackQuery.Id,
-                                        text: "Hozircha hech qanaqa hizmatni tanlamadis",
+                                        langId == 1 ? "Hozircha hech qanaqa hizmatni tanlamadingiz!" : "Вы еще не выбрали ни одной услуги!",
                                         showAlert: true, cacheTime: 4);
                     }
                 }
@@ -231,11 +231,11 @@ namespace TelegramBotForShaxrixon
                 Bot.SendTextMessageAsync(e.Message.Chat.Id, "Call center \n Ism: Shaxrixon \n Telefon: \n +998 99 8080390 \n \nИзм: Shaxrixon \n Телефон: \n +998 99 8080390");
             else if (e.Message.Text == "/start" && chat.Name == null)
             {
-                await Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos telefon ism ni kiritin");
+                await Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos telefon ism ni kiriting!");
             }
             else if (e.Message.Text == "/start" && chat.Phone == null)
             {
-                await Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos telefon nomer ni kiritin");
+                await Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos telefon nomer ni kiriting!");
             }
             else if (e.Message.Contact != null && chat.Phone == null)
             {
@@ -267,7 +267,7 @@ namespace TelegramBotForShaxrixon
                     var random = new Random().Next(10000, 99999);
                     var phone = Convert.ToInt32(e.Message.Text);
                     await ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = chat.Name, Phone = e.Message.Text, ChatId = e.Message.Chat.Id, IsActive = false, GenerateCode = random });
-                    await Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos kodni kiriting!");
+                    await Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos kodni kiriting! \nПожалуйста, введите код!");
                     SendSMSForClient(e);
                 }
                 catch
@@ -355,7 +355,7 @@ namespace TelegramBotForShaxrixon
                     }
                     var RequestReplyKeyboard = new ReplyKeyboardMarkup(new[] { new KeyboardButton() });
                     ordersText = ordersText + "\n \n" + textForClient;
-                    var inline = new InlineKeyboardMarkup(new[] { new[] { InlineKeyboardButton.WithCallbackData("Ish yakunlandi", "done") } });
+                    var inline = new InlineKeyboardMarkup(new[] { new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "Ish yakunlandi" : "Работа завершена", "done") } });
                     await Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, ordersText, replyMarkup: inline);
 
                 }
@@ -477,7 +477,7 @@ namespace TelegramBotForShaxrixon
 
 ";
             }
-            var inline = new InlineKeyboardMarkup(new[] { new[] { InlineKeyboardButton.WithCallbackData("Ish yakunlandi", "done") } });
+            var inline = new InlineKeyboardMarkup(new[] { new[] { InlineKeyboardButton.WithCallbackData(langId==1?"Ish yakunlandi":"Работа завершена", "done") } });
             await Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, ordersText, replyMarkup: inline);
         }
 
