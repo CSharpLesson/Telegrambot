@@ -18,7 +18,7 @@ namespace TelegramBotForShaxrixon
 {
     public static class TelegramBot
     {
-        public static readonly TelegramBotClient Bot = new TelegramBotClient("1438242785:AAFHA4hqWYaP1T5OHOkHBh_d6CBVsido5gU");
+        public static readonly TelegramBotClient Bot = new TelegramBotClient("1585845108:AAHHZhtx-GGVzIvUub5ucX8OTiL6oscyAGY");
         const int TABRIKLATION_TIME_HOURS = 8;
         const int TABRIKLATION_TIME_MINUTES = 0;
         const int INTERVAL = 86400;
