@@ -53,7 +53,8 @@ namespace TelegramBotForShaxrixon.Service
         {
             try
             {
-                return await new DataContext().Orders.FirstOrDefaultAsync(f => f.ChatId == chatId && f.Position == position);
+                var date = DateTime.Now;
+                return await new DataContext().Orders.FirstOrDefaultAsync(f => f.ChatId == chatId && f.Position == position && f.DateOrder.Value.Day == date.Day && f.DateOrder.Value.Month == date.Month && f.DateOrder.Value.Year == date.Year);
             }
             catch (Exception ex)
             {
@@ -69,7 +70,8 @@ namespace TelegramBotForShaxrixon.Service
         {
             try
             {
-                return  await new DataContext().Orders.Where(f => f.ChatId == chatId && f.Position == position).ToListAsync();
+                var date = DateTime.Now;
+                return  await new DataContext().Orders.Where(f => f.ChatId == chatId && f.Position == position && f.DateOrder.Value.Day == date.Day && f.DateOrder.Value.Month == date.Month && f.DateOrder.Value.Year == date.Year).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -87,7 +89,7 @@ namespace TelegramBotForShaxrixon.Service
             try
             {
                 var date = DateTime.Now;                
-                  return  await new DataContext().Orders.FirstOrDefaultAsync(f => f.ChatId == chatId && f.Position == position && f.ServiceId == service && f.DateOrder.Value.Day == date.Day && f.DateOrder.Value.Month == date.Month);
+                  return  await new DataContext().Orders.FirstOrDefaultAsync(f => f.ChatId == chatId && f.Position == position && f.ServiceId == service && f.DateOrder.Value.Day == date.Day && f.DateOrder.Value.Month == date.Month && f.DateOrder.Value.Year==date.Year);
             }
             catch (Exception ex)
             {

@@ -49,6 +49,12 @@ namespace TelegramBotForShaxrixon.Model
         /// <summary>
         /// 
         /// </summary>
+        [Column("suxoypar")]
+        public double? SuxoyPar { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         [Column("count")]
         public int Count { get; set; }
 
