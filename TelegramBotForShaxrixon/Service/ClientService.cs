@@ -17,11 +17,11 @@ namespace TelegramBotForShaxrixon.Service
         /// 
         /// </summary>
         /// <returns></returns>
-        public static List<Client> GetAll()
+        public async static Task<List<Client>> GetAll()
         {
             try
             {
-                return new DataContext().Clients.ToList();
+                return await new DataContext().Clients.ToListAsync();
             }
             catch (Exception ex)
             {
