@@ -58,7 +58,7 @@ namespace TelegramBotForShaxrixon
             var eventmassive = e.CallbackQuery.Data.Split("_");
             if (client != null && client.IsActive == true)
             {
-                if (e.CallbackQuery.Data == "order")
+                if (e.CallbackQuery.Data == "confirm")
                 {
                     var order = await OrdersService.GetByPositionChatIdDate(e.CallbackQuery.From.Id, 1);
                     if (order.Count() > 0)
@@ -71,6 +71,8 @@ namespace TelegramBotForShaxrixon
                             new KeyboardButton(langId==1?"📍 Geolokatsiyani yuboring":"📍 Отправить геолокацию") { RequestLocation = true }
                         });
                             RequestReplyKeyboard.ResizeKeyboard = true;
+                            await Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, langId == 1 ? "📍 Geolokatsiyani yuboring" : "📍 Отправить геолокацию");
+                            await Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, "⬇️⬇️⬇️", ParseMode.Default, false, false, 0, RequestReplyKeyboard);
                         }
                         else
                         {
@@ -89,16 +91,36 @@ namespace TelegramBotForShaxrixon
                                         showAlert: true, cacheTime: 4);
                     }
                 }
+                else if (e.CallbackQuery.Data == "order")
+                {
+                    SendConfirms(e);
+                }
+                else if (e.CallbackQuery.Data == "cancel")
+                {
+                    OrderCancel(e);
+                }
                 else if (calback != -1)
                 {
-                    Bot.AnswerCallbackQueryAsync(
+                    
+                    var order = await OrdersService.GetByPositionChatIdService(e.CallbackQuery.From.Id, 1, Convert.ToInt32(eventmassive[1]));
+                    if (order != null)
+                    {
+                        await Bot.AnswerCallbackQueryAsync(
                    callbackQueryId: e.CallbackQuery.Id,
                    text: langId == 1 ? "Jo'natildi" : "Отправлено",
                    showAlert: false);
-                    var order = await OrdersService.GetByPositionChatIdService(e.CallbackQuery.From.Id, 1, Convert.ToInt32(eventmassive[1]));
-                    await OrdersService.AddOrUpdate(new Orders() { Id = order.Id, ChatId = e.CallbackQuery.From.Id, ServiceId = order.ServiceId, DateOrder = order.DateOrder, Position = 1, Count = order.Count, SuxoyPar = 20000 });
-                    Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, "✅");
-                    InliniButtonForServices(e);
+                        await OrdersService.AddOrUpdate(new Orders() { Id = order.Id, ChatId = e.CallbackQuery.From.Id, ServiceId = order.ServiceId, DateOrder = order.DateOrder, Position = 1, Count = order.Count, SuxoyPar = 20000 });
+                        Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, "✅");
+                        InliniButtonForServices(e);
+                    }
+                    else
+                    {
+                        await Bot.AnswerCallbackQueryAsync(
+                   callbackQueryId: e.CallbackQuery.Id,
+                   text: langId == 1 ? "Bunday xizmat mavjud emas" : "Такая услуга недоступна",
+                   showAlert: false);
+                        InliniButtonForServices(e);
+                    }
                 }
                 //else if (calback != -1)
                 //{
@@ -153,6 +175,10 @@ namespace TelegramBotForShaxrixon
                 //    InliniButtonForServices(e);
                 //    await Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, "✅");
                 //}
+                else if (e.CallbackQuery.Data == "confirm")
+                {
+
+                }
                 else if (e.CallbackQuery.Data == "dontaddSuxoyPar")
                 {
                     Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, "❌");
@@ -170,9 +196,9 @@ namespace TelegramBotForShaxrixon
                     var inline = new InlineKeyboardMarkup(new[] {
                 new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "✅Ha" : "✅Да", $"addSuxoyPar_{e.CallbackQuery.Data}"),InlineKeyboardButton.WithCallbackData(langId == 1 ? "❌Yo'q" : "❌Нет", "dontaddSuxoyPar")},
                 });
-                    await Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, langId == 1 ? "Siz suxoy par xohlamaysizmi ?" : "Вы не хотите сухой пар", replyMarkup: inline);
+                    Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, langId == 1 ? "Suxoy par xohlamaysizmi?\n 💨Suxoy par 20000 so'm" : "Вы не хотите сухой пар?\n 💨Сухой пар 20000 сўм", replyMarkup: inline);
                 }
-                else if (await OrdersService.GetByPositionChatIdService(e.CallbackQuery.From.Id, 1, Convert.ToInt32(e.CallbackQuery.Data)) != null) 
+                else if (await OrdersService.GetByPositionChatIdService(e.CallbackQuery.From.Id, 1, Convert.ToInt32(e.CallbackQuery.Data)) != null)
                 {
                     await Bot.AnswerCallbackQueryAsync(
                                        callbackQueryId: e.CallbackQuery.Id,
@@ -202,7 +228,29 @@ namespace TelegramBotForShaxrixon
             }
         }
 
+        private async static Task OrderCancel(CallbackQueryEventArgs e)
+        {
+            var orders = await OrdersService.GetByPositionChatIdDate(e.CallbackQuery.From.Id, 1);
+            if (orders != null)
+            {
+                foreach (var order in orders)
+                {
+                    await OrdersService.AddOrUpdate(new Orders() { Id = order.Id, ChatId = order.ChatId, ServiceId = order.ServiceId, Position = 4, DateOrder = order.DateOrder, Count = order.Count });
+                }
+            }
+            InliniButtonForServices(e);
+        }
+        private static void SendConfirms(CallbackQueryEventArgs e)
+        {
 
+            var lang = new DataContext().Languages.FirstOrDefault(f => f.ChatId == e.CallbackQuery.From.Id);
+            var langId = lang != null ? lang.LanguageId : 1;
+            var inline = new InlineKeyboardMarkup(new[] {
+                    new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "✅Tasdiqlash" : "✅Подтвердить", "confirm") },
+                    new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "🚫Bekor qilish" : "🚫Отменить", "cancel") },
+                });
+            Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, e.CallbackQuery.Message.MessageId, langId == 1 ? "Tasdiqlashni xohlaysizmi?" : "Вы хотите подтвердить?", replyMarkup: inline);
+        }
 
         private async static void DoneOrder(CallbackQueryEventArgs e)
         {
@@ -481,10 +529,10 @@ namespace TelegramBotForShaxrixon
                     {
                         allsum = allsum + (item.ServiceModel?.Price * item.Count).Value;
                         ordersText = ordersText + "\n" + item.ServiceModel?.Name + "\n   " + item.ServiceModel?.Name + " " + item.Count + " x" + " " + item.ServiceModel?.Price + "=" + (item.ServiceModel?.Price * item.Count);
-                        if (item.SuxoyPar != null) 
+                        if (item.SuxoyPar != null)
                         {
                             ordersText += ordersText = "\n  " + suxoypar + " = 20000";
-                            allsum += 20000; 
+                            allsum += 20000;
                         }
                         ordersText += "\n\n--------\n";
                     }
