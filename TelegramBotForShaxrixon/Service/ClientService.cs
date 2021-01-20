@@ -17,61 +17,34 @@ namespace TelegramBotForShaxrixon.Service
         /// 
         /// </summary>
         /// <returns></returns>
-        public async static Task<List<Client>> GetAll()
-        {
-            try
-            {
-                return await new DataContext().Clients.ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        public static Task<List<Client>> GetAll() =>  new DataContext().Clients.ToListAsync();
+
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="chatId"></param>
         /// <returns></returns>
-        public  async static Task<Client> GetByChatId(long chatId)
-        {
-            try
-            {               
-                 return await new DataContext().Clients.FirstOrDefaultAsync(f => f.ChatId == chatId);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        public static Task<Client> GetByChatId(long chatId) => new DataContext().Clients.FirstOrDefaultAsync(f => f.ChatId == chatId);
 
-        public static Client GetById(int Id)
-        {
-            try
-            {
-                return new DataContext().Clients.FirstOrDefault(f => f.Id == Id);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public static Task<Client> GetById(int Id) => new DataContext().Clients.FirstOrDefaultAsync(f => f.Id == Id);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="model"></param>
-        public async static Task AddOrUpdate(Client model) 
+        public static void AddOrUpdate(Client model)
         {
             try
             {
-                await Task.Run(() => 
-                {
-                    DataContext context = new DataContext();
-                    context.Clients.Update(model);
-                    context.SaveChanges();
-                });
+                DataContext context = new DataContext();
+                context.Clients.Update(model);
+                context.SaveChanges();
             }
             catch (Exception ex)
             {

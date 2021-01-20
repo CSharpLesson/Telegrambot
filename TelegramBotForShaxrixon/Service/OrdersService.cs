@@ -15,16 +15,24 @@ namespace TelegramBotForShaxrixon.Service
         /// 
         /// </summary>
         /// <returns></returns>
-        public async static Task<List<Orders>> GetAll()
+        public  static Task<List<Orders>> GetAll() => new DataContext().Orders.ToListAsync();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="chatId"></param>
+        /// <returns></returns>
+        public  static Task<Orders> GetByChatId(long chatId) => new DataContext().Orders.FirstOrDefaultAsync(f => f.ChatId == chatId);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="chatId"></param>
+        /// <returns></returns>
+        public  static Task<Orders> GetByPositionChatId(long chatId, int position)
         {
-            try
-            {
-                return await new  DataContext().Orders.ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            var date = DateTime.Now;
+            return new DataContext().Orders.FirstOrDefaultAsync(f => f.ChatId == chatId && f.Position == position && f.DateOrder.Value.Day == date.Day && f.DateOrder.Value.Month == date.Month && f.DateOrder.Value.Year == date.Year);
         }
 
         /// <summary>
@@ -32,16 +40,10 @@ namespace TelegramBotForShaxrixon.Service
         /// </summary>
         /// <param name="chatId"></param>
         /// <returns></returns>
-        public async static Task<Orders> GetByChatId(long chatId)
+        public static Task<List<Orders>> GetAllByPositionChatId(long chatId, int position)
         {
-            try
-            {
-                return await new DataContext().Orders.FirstOrDefaultAsync(f => f.ChatId == chatId);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            var date = DateTime.Now;
+            return new DataContext().Orders.Where(f => f.ChatId == chatId && f.Position == position && f.DateOrder.Value.Day == date.Day && f.DateOrder.Value.Month == date.Month && f.DateOrder.Value.Year == date.Year).ToListAsync();
         }
 
         /// <summary>
@@ -49,34 +51,10 @@ namespace TelegramBotForShaxrixon.Service
         /// </summary>
         /// <param name="chatId"></param>
         /// <returns></returns>
-        public async static  Task<Orders> GetByPositionChatId(long chatId, int position)
+        public static Task<Orders> GetByPositionChatIdService(long chatId, int position, int service)
         {
-            try
-            {
-                var date = DateTime.Now;
-                return await new DataContext().Orders.FirstOrDefaultAsync(f => f.ChatId == chatId && f.Position == position && f.DateOrder.Value.Day == date.Day && f.DateOrder.Value.Month == date.Month && f.DateOrder.Value.Year == date.Year);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="chatId"></param>
-        /// <returns></returns>
-        public  async static Task<List<Orders>> GetAllByPositionChatId(long chatId, int position)
-        {
-            try
-            {
-                var date = DateTime.Now;
-                return  await new DataContext().Orders.Where(f => f.ChatId == chatId && f.Position == position && f.DateOrder.Value.Day == date.Day && f.DateOrder.Value.Month == date.Month && f.DateOrder.Value.Year == date.Year).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            var date = DateTime.Now;
+            return new DataContext().Orders.FirstOrDefaultAsync(f => f.ChatId == chatId && f.Position == position && f.ServiceId == service && f.DateOrder.Value.Day == date.Day && f.DateOrder.Value.Month == date.Month && f.DateOrder.Value.Year == date.Year);
         }
 
         /// <summary>
@@ -84,58 +62,22 @@ namespace TelegramBotForShaxrixon.Service
         /// </summary>
         /// <param name="chatId"></param>
         /// <returns></returns>
-        public async static Task<Orders> GetByPositionChatIdService(long chatId, int position, int service)
+        public static Task<List<Orders>> GetByPositionChatIdDate(long chatId, int position)
         {
-            try
-            {
-                var date = DateTime.Now;                
-                  return  await new DataContext().Orders.FirstOrDefaultAsync(f => f.ChatId == chatId && f.Position == position && f.ServiceId == service && f.DateOrder.Value.Day == date.Day && f.DateOrder.Value.Month == date.Month && f.DateOrder.Value.Year==date.Year);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="chatId"></param>
-        /// <returns></returns>
-        public async static Task<List<Orders>> GetByPositionChatIdDate(long chatId, int position)
-        {
-            try
-            {
-                var date = DateTime.Now;
-                return await new DataContext().Orders.Where(f => f.ChatId == chatId && f.Position == position &&f.DateOrder.Value.Day==date.Day && f.DateOrder.Value.Month == date.Month)
-                                               .Include(c=>c.ServiceModel).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            var date = DateTime.Now;
+            return new DataContext().Orders.Where(f => f.ChatId == chatId && f.Position == position && f.DateOrder.Value.Day == date.Day && f.DateOrder.Value.Month == date.Month)
+                                           .Include(c => c.ServiceModel).ToListAsync();
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="model"></param>
-        public async static Task AddOrUpdate(Orders model)
+        public static void AddOrUpdate(Orders model)
         {
-            try
-            {
-                await Task.Run(() => 
-                {
-                    var context = new DataContext();
-                    context.Orders.Update(model);
-                    context.SaveChanges();
-                });
-                
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            var context = new DataContext();
+            context.Orders.Update(model);
+            context.SaveChanges();
         }
     }
 }

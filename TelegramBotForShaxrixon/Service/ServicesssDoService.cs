@@ -15,34 +15,16 @@ namespace TelegramBotForShaxrixon.Service
         /// 
         /// </summary>
         /// <returns></returns>
-        public async static Task<List<Servicess>> GetAll()
-        {
-            try
-            {
-                return await new DataContext().Services.ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }       
+        public static Task<List<Servicess>> GetAll() => new DataContext().Services.ToListAsync();
+
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="Id"></param>
         /// <returns></returns>
-        public async static Task<Servicess> GetById(int Id)
-        {
-            try
-            {
-                return await new DataContext().Services.FirstOrDefaultAsync(f => f.Id == Id);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        public static Servicess GetById(int Id) => new DataContext().Services.FirstOrDefault(f => f.Id == Id);
+
 
         /// <summary>
         /// 
