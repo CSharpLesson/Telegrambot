@@ -190,7 +190,7 @@ namespace TelegramBotForShaxrixon
             var inline = new InlineKeyboardMarkup(new[] {
                 new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "✅Ha" : "✅Да", $"addSuxoyPar_{e.CallbackQuery.Data}"),InlineKeyboardButton.WithCallbackData(langId == 1 ? "❌Yo'q" : "❌Нет", "dontaddSuxoyPar")},
                 });
-            Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, langId == 1 ? "Suxoy par xohlamaysizmi?\n 💨Suxoy par 20000 so'm" : "Вы не хотите сухой пар?\n 💨Сухой пар 20000 сўм", replyMarkup: inline);
+            Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, langId == 1 ? "Suxoy tuman xoxlaysizmi?\n 💨Suxoy tuman 20000 so'm" : "Вы не хотите сухой пар?\n 💨Сухой пар 20000 сўм", replyMarkup: inline);
         }
 
         /// <summary>
@@ -261,7 +261,7 @@ namespace TelegramBotForShaxrixon
             var lang = await new DataContext().Languages.FirstOrDefaultAsync(f => f.ChatId == e.CallbackQuery.From.Id);
             var langId = lang != null ? lang.LanguageId : 1;
             string umumiy = langId == 1 ? "Umumiy xisob" : "Общий счет";
-            string suxoypar = langId == 1 ? "💨Suxoy par" : "💨Сухой пар";
+            string suxoypar = langId == 1 ? "💨Suxoy tuman" : "💨Сухой пар";
             var orders = await OrdersService.GetByPositionChatIdDate(e.CallbackQuery.From.Id, 1);
             foreach (var item in orders)
             {
@@ -318,8 +318,7 @@ namespace TelegramBotForShaxrixon
         static async Task Message(MessageEventArgs e)
         {
             try
-            {
-                
+            {                
                 var chat = await ClientService.GetByChatId(e.Message.Chat.Id);                
                 var order = await OrdersService.GetByPositionChatId(e.Message.Chat.Id, 1);                
                 //Stream read = File.OpenRead("dry.mp4");
@@ -454,7 +453,7 @@ namespace TelegramBotForShaxrixon
                 var orders = await OrdersService.GetByPositionChatIdDate(e.CallbackQuery.From.Id, 1);
                 if (orders != null)
                 {
-                    string suxoypar = langId == 1 ? "💨Suxoy par" : "💨Сухой пар";
+                    string suxoypar = langId == 1 ? "💨Suxoy tuman" : "💨Сухой пар";
                     string naqt = langId == 1 ? "💵 Naqd to'lash" : "💵 Платить наличными";
                     string card = langId == 1 ? "💳 Karta raqam orqali to'lash" : "💳 Оплата по номеру карты";
                     string cardNum = langId == 1 ? "Karta raqam:" : "Номер карты:";
@@ -523,7 +522,7 @@ namespace TelegramBotForShaxrixon
                         OrdersService.AddOrUpdate(new Orders() { Id = order.Id, ChatId = order.ChatId, ServiceId = order.ServiceId, Longitude = e.Message.Location.Longitude.ToString(), Lotetude = e.Message.Location.Latitude.ToString(), Position = 1, DateOrder = order.DateOrder, Count = order.Count, SuxoyPar = order.SuxoyPar });
                     }
 
-                    Bot.SendTextMessageAsync(e.Message.Chat.Id, langId == 1 ? "Bizda samarali to'lov turlari bor" : "У нас есть эффективные способы оплаты", replyMarkup: new ReplyKeyboardRemove());
+                    await Bot.SendTextMessageAsync(e.Message.Chat.Id, langId == 1 ? "Bizda samarali to'lov turlari bor" : "У нас есть эффективные способы оплаты", replyMarkup: new ReplyKeyboardRemove());
                     var inline = new InlineKeyboardMarkup(new[] {
                     new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "💵 Naqd  to'lov" : "💵 Платить наличными", "paynaqt") },
                     new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "💳 Karta raqam orqali to'lash": "💳 Оплата по номеру карты", "paycard") },
@@ -559,12 +558,13 @@ namespace TelegramBotForShaxrixon
         private async static Task InliniButtonForServices(long chatId, int messageId)
         {
             try
-            {                
-                var lang = await new DataContext().Languages.FirstOrDefaultAsync(f => f.ChatId == chatId);
+            {
+                var lang = await new DataContext().Languages.FirstOrDefaultAsync(f => f.ChatId == chatId);                
                 var langId = lang != null ? lang.LanguageId : 1;                
-                var services = await ServicesssDoService.GetAll();
-                services = services.OrderBy(f => f.Id).ToList();                
-                var inlines = new List<InlineKeyboardButton[]>();                
+                var services = await ServicesssDoService.GetAll();                
+                services = services.OrderBy(f => f.Id).ToList();
+                var inlines = new List<InlineKeyboardButton[]>();
+                
                 for (int i = 0; i < services.Count; i++)
                 {
                     if (i + 1 >= services.Count)
@@ -577,14 +577,16 @@ namespace TelegramBotForShaxrixon
                     }
                     i++;
                 }
+                
                 inlines.Add(new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "🧾 Buyurtma berish" : "🧾 Заказать", "order") });
-                inlines.Add(new[] { InlineKeyboardButton.WithCallbackData("Tilni o'zgartirish/Изменить язык", "setLang") });
+                inlines.Add(new[] { InlineKeyboardButton.WithCallbackData("Tilni o'zgartirish/Изменить язык", "setLang") });                
                 var inlineKeyboard = new InlineKeyboardMarkup(inlines);
+                
 
                 if (messageId == 0)
-                    Bot.SendTextMessageAsync(chatId, langId == 1 ? "Iltimos xizmat turini tanlang" : "Пожалуйста, выберите тип услуги", replyMarkup: inlineKeyboard);
+                    await Bot.SendTextMessageAsync(chatId, langId == 1 ? "Iltimos xizmat turini tanlang" : "Пожалуйста, выберите тип услуги", replyMarkup: inlineKeyboard);
                 else
-                    Bot.EditMessageTextAsync(chatId, messageId, langId == 1 ? "Iltimos xizmat turini tanlang" : "Пожалуйста, выберите тип услуги", replyMarkup: inlineKeyboard);
+                    await Bot.EditMessageTextAsync(chatId, messageId, langId == 1 ? "Iltimos xizmat turini tanlang" : "Пожалуйста, выберите тип услуги", replyMarkup: inlineKeyboard);                
 
             }
             catch (Exception ex)

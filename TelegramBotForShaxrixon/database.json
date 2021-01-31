@@ -1,0 +1,3 @@
+{
+   "con":"Host=localhost;Port=5432;Database=suxoyMoyka;Username=postgres;Password=123"
+}
