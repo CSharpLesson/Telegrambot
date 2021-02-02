@@ -26,7 +26,7 @@ namespace TelegramBotForShaxrixon
         /// <summary>
         /// 
         /// </summary>
-        public static readonly TelegramBotClient Bot = new TelegramBotClient("1585845108:AAHHZhtx-GGVzIvUub5ucX8OTiL6oscyAGY");
+        public static readonly TelegramBotClient Bot = new TelegramBotClient("1438242785:AAHF1S3HVs2B0OMYy36BkD8pmPfyFGAcvzs");
 
         /// <summary>
         /// 
@@ -320,7 +320,7 @@ namespace TelegramBotForShaxrixon
             try
             {                
                 var chat = await ClientService.GetByChatId(e.Message.Chat.Id);                
-                var order = await OrdersService.GetByPositionChatId(e.Message.Chat.Id, 1);                
+                var order = await OrdersService.GetByPositionChatId(e.Message.Chat.Id, 1);
                 //Stream read = File.OpenRead("dry.mp4");
                 if (e.Message.Location != null && chat != null && order != null)
                 {
@@ -342,7 +342,7 @@ namespace TelegramBotForShaxrixon
                     Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos /start ni bosing");
 
                 else if (e.Message.Text == "/info")
-                    Bot.SendTextMessageAsync(e.Message.Chat.Id, "Call center \nTelefon: \n +998 95 0045899 \n \n Телефон: \n +998 95 0045899");
+                    Bot.SendTextMessageAsync(e.Message.Chat.Id, "Call center \nTelefon: \n +998 95 001 07 99 \n \n Телефон: \n +998 95 001 07 99");
                 else if (e.Message.Text == "/start" && chat.Name == null)
                     Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos telefon ism ni kiriting!");
 
@@ -355,6 +355,19 @@ namespace TelegramBotForShaxrixon
                     ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = chat.Name, Phone = e.Message.Contact.PhoneNumber, ChatId = e.Message.Chat.Id, IsActive = false, GenerateCode = random });
                     SendSMSForClient(e);
                     Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos Kodni kiriting! \n \n Пожалуйста, введите код", replyMarkup: new ReplyKeyboardRemove());
+                }
+                else if (e.Message.Text == "/changenumber") 
+                {
+                    ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = chat.Name , ChatId = e.Message.Chat.Id });
+                    var secondmessage = "Ro'yxatdan o'tish uchun telefon raqamingizni kiriting \nRaqamni 901234567 shaklida yuboring. \n \n Введите свой номер телефона для регистрации \nОтправьте номер в форме 901234567.";
+                    var RequestReplyKeyboard = new ReplyKeyboardMarkup(new[]// bu yerda location qabul qilish ishlatilvotdi
+                            {
+                            new KeyboardButton("📱 Contact") { RequestContact = true }
+                        });
+                    RequestReplyKeyboard.ResizeKeyboard = true;
+                    RequestReplyKeyboard.OneTimeKeyboard = true;
+
+                    Bot.SendTextMessageAsync(e.Message.Chat.Id, secondmessage, ParseMode.Default, false, false, 0, RequestReplyKeyboard);
                 }
                 else if (chat.Name == null)
                 {
