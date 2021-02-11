@@ -26,7 +26,7 @@ namespace TelegramBotForShaxrixon
         /// <summary>
         /// 
         /// </summary>
-        public static readonly TelegramBotClient Bot = new TelegramBotClient("1438242785:AAHF1S3HVs2B0OMYy36BkD8pmPfyFGAcvzs");
+        public static readonly TelegramBotClient Bot = new TelegramBotClient("1585845108:AAHHZhtx-GGVzIvUub5ucX8OTiL6oscyAGY");
 
         /// <summary>
         /// 
