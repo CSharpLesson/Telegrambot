@@ -28,7 +28,7 @@ namespace TelegramBotForShaxrixon.Db
         /// <param name="optionsBuilder"></param>
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql(Program.DataCon);
+            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=suxayaMoyka;Username=postgres;Password=123456");
         }        
 
         /// <summary>
