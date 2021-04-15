@@ -26,7 +26,7 @@ namespace TelegramBotForShaxrixon
         /// <summary>
         /// 
         /// </summary>
-        public static readonly TelegramBotClient Bot = new TelegramBotClient("1585845108:AAHHZhtx-GGVzIvUub5ucX8OTiL6oscyAGY");
+        public static readonly TelegramBotClient Bot = new TelegramBotClient("1585845108:AAHcxTNoJMfaOhnhhoVxVU4YDb345Maet5w");
 
         /// <summary>
         /// 
@@ -308,7 +308,7 @@ namespace TelegramBotForShaxrixon
         private static void Bot_OnMessage(object sender, MessageEventArgs e)
         {
             Console.WriteLine($"{DateTime.Now}  {e.Message.Chat.Id}  {e.Message.Chat.Username} {e.Message.Text}");
-            Message(e);
+            Message(e);            
         }
 
         /// <summary>
@@ -336,7 +336,7 @@ namespace TelegramBotForShaxrixon
         private static async Task TryMessage(MessageEventArgs e)
         {
             var chat = await ClientService.GetByChatId(e.Message.Chat.Id);
-            var company = CompanyService.GetByChatId(e.Message.Chat.Id);            
+            var company = CompanyService.GetByChatId(e.Message.Chat.Id);
             var order = await OrdersService.GetByPositionChatId(e.Message.Chat.Id, 1);
             //Stream read = File.OpenRead("dry.mp4");
             if (e.Message.Location != null && chat != null && order != null)
@@ -358,6 +358,11 @@ namespace TelegramBotForShaxrixon
                 ClientService.AddOrUpdate(new Client() { ChatId = e.Message.Chat.Id });
                 Bot.SendTextMessageAsync(e.Message.Chat.Id, firstmessage);
 
+            }
+            else if (e.Message.Text == "/todayPeople" && company != null)
+            {
+                var count = await ClientService.GetCount();
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, count != 0 ? "Bugungi qo'shilgan odamlar - " + count : "Bugun odam qo'shilmagan");
             }
             else if (e.Message.Text != "/start" && chat == null)
                 Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos /start ni bosing");
@@ -408,11 +413,19 @@ namespace TelegramBotForShaxrixon
             {
                 try
                 {
-                    var random = new Random().Next(10000, 99999);
-                    var phone = Convert.ToInt32(e.Message.Text);
-                    ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = chat.Name, Phone = e.Message.Text, ChatId = e.Message.Chat.Id, IsActive = false, GenerateCode = random });
-                    Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos kodni kiriting! \nПожалуйста, введите код!");
-                    SendSMSForClient(e);
+                    if (e.Message.Text.Length == 9)
+                    {
+                        var random = new Random().Next(10000, 99999);
+                        var phone = Convert.ToInt32(e.Message.Text);
+                        ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = chat.Name, Phone = e.Message.Text, ChatId = e.Message.Chat.Id, IsActive = false, GenerateCode = random });
+                        Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos kodni kiriting! \nПожалуйста, введите код!");
+                        SendSMSForClient(e);
+                    }
+                    else
+                    {
+                        var secondmessage = "Telefon raqam noto'g'ri kiritildi \n Raqamni 901234567 shaklida yuboring!";
+                        Bot.SendTextMessageAsync(e.Message.From.Id, secondmessage);
+                    }
                 }
                 catch
                 {
@@ -422,7 +435,7 @@ namespace TelegramBotForShaxrixon
             }
             else if (chat.IsActive == false && chat.GenerateCode.ToString() == e.Message.Text)
             {
-                ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = chat.Name, Phone = chat.Phone, GenerateCode = chat.GenerateCode, ChatId = e.Message.Chat.Id, IsActive = true });
+                ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = chat.Name, Phone = chat.Phone, GenerateCode = chat.GenerateCode, ChatId = e.Message.Chat.Id, IsActive = true, DateCreate = DateTime.Now.Date });
                 InliniButtonForServices(e);
             }
             else if (chat.IsActive == true)
@@ -448,7 +461,7 @@ namespace TelegramBotForShaxrixon
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message+ " "+ e.Message.Chat.Id);
+                Console.WriteLine(ex.Message + " " + e.Message.Chat.Id);
             }
         }
 
@@ -461,7 +474,7 @@ namespace TelegramBotForShaxrixon
         {
             var clients = await ClientService.GetAll();
             foreach (var client in clients)
-            {                
+            {
                 Bot.ForwardMessageAsync(client.ChatId, e.Message.Chat.Id, e.Message.MessageId);
                 Console.WriteLine(client.Name);
             }
@@ -475,7 +488,7 @@ namespace TelegramBotForShaxrixon
         {
             try
             {
-                await TrySendSMSForClient(e);                
+                await TrySendSMSForClient(e);
             }
             catch (Exception ex)
             {
@@ -512,7 +525,7 @@ namespace TelegramBotForShaxrixon
         {
             try
             {
-                await TrySendToCompany(e);                
+                await TrySendToCompany(e);
             }
             catch (Exception ex)
             {
@@ -586,7 +599,7 @@ namespace TelegramBotForShaxrixon
         {
             try
             {
-                await TrySendPayment(e);                
+                await TrySendPayment(e);
             }
             catch (Exception ex)
             {
@@ -831,8 +844,52 @@ namespace TelegramBotForShaxrixon
         {
             var clients = await ClientService.GetAll();
             foreach (var client in clients)
-            {                
-                Bot.SendTextMessageAsync(client.ChatId, "Assalom alaikum hammaga xayrli kun! Biz o’z faoliyatimizni kengaytirish maqsadida qisqa muddatlik tanaffuzdan so’ng biz yanada ko’proq imkoniyatlar yarattik.Endilikda moshinangizni faqatgina suvsiz turgan joyizda yuvdirish imkoni bilan birgalikda bazi joylariga karcherlar ishlatishni ham yo’lga qo’ydik.Hech qanday qirilish, chizilish yoki rangi ko’chishi haqida qayg’urmasangiz ham bo’ladi bularning barchasi sizlar uchun! Buyurtma berish uchun bizning telegram botimizdan foydalaning.");
+            {
+
+                Bot.SendTextMessageAsync(client.ChatId, @"Азиз дўстлар, бу рубрикамизда биз энг кўп бериладиган саволларга жавоб бердик😊
+
+❇️Green wash ўзи нима?
+
+➡️Бу уникал  восита хисобланиб машинани  3 босқичда  тозаланилишда қўлланилади 
+Булар:⬇️
+ 1️⃣. Green wash восита билан          машинани қамраш.
+ 2️⃣. Кирни юмшоқ  мато билан йўқотиш (микрофибра сочиқларини  кўллаш шарт!)
+ 3️⃣. Тоза мато билан блеск пайдо бўлгунича артиш
+
+♻️Бу қандай ишлайди❔
+
+✅Машинанинг  кир юзасига тушиб, Green wash актив моддалари ишга тушади ва машина устидаги ифлосланишларни йўқотади.
+↪️Ундан сўнг, воситанинг суртилувчи нано-агентлари машинанинг бўёқ кисмига кириб бор ифлосланишни чиқариб ташлайди.
+↪️Полировка жараёнида , ишлов берилаётган юзаликдаги махсус моддалар полимерлашади ва мустахкам химоя қатламига айланади. Полимернинг айнан шу қатлами машинанинг юзасига блеск бериб туради ва музлашга карши реагентлар, хамда ултрабинафша нурлари, кислота чўкмаларидан мустахкам химоя хосил қилади.
+
+🔓🔓🔓
+Нега машина юзасига зарар етказмайди?
+
+Green wash автомобилни сувсиз тозалаш усулини қўллаганда машина юзасига зарар етқазиши мумкин бўлган барча қаттик юзаликлар полимер микро капсулаларига қамраб олинади.
+Ёрдамчи элементлар эса, уларни машина юзасидан буёқни шикастламай тозалашга хизмат қилади
+
+⏳Бир машинани тозалаш🛁  учун қанча миқдорда Green wash махсулоти керак?
+
+⌛️Green wash махсулотининг бир флакони, 🧴яъни 0.5 литри ўртача седанни 3 марта ювиб, блеск беришга етади.
+☘️Умуман олганда махсулот сарфланиши машина катталиги ва ифлосланиш даражасига боғлиқ. Ундан ташқари воситани биринчи маротаба қўллаганингизда кейинги жараёнлардан кўра купроқ сарфланади. 😍
+Бу ерда тажрибасизлик ўз сўзини айтади! Энг мухими шуки ✔️Green wash воситаси ёрдамида бир бор тозаланган машина юзасида (кузовида)  химоя қатлами хосил бўлади ва бу машинани камроқ ифлосланишига хизмат қилади
+☑️☑️☑️ Асосийси осон ювилади 🚿✨
+
+💚💚💚💚Green wash сувсиз тозалаш воситасининг универсаллиги нимада?
+
+❣️Восита универсаллиги шундаки, сиз уни олганда шунчаки тозалаш учун воситага эга бўлиб колмайсиз. Сиз универсал тозалаш тизимини қўлга киритасиз. 
+Агарда⏳❌вактингиз тиғиз булиб, машинани ювишни  хохламасангиз - воситани шунчаки унинг юзасига сепиб, микрофибра сочиқ ёрдамида артиб чиқишингиз керак бўлади (20-30 мин вақт кетади)
+
+📎🧾 Кандай юзаликларда қўллаш мумкин?
+
+Деярли барча қаттиқ юзаликларда: машинанинг бўёқ қатлами, пластик, хром, резина, чарм( кожа), алюминий, зангламас пўлат. 
+Воситани жуда кенг тармоқларда қўллаш мумкин, масалан скутерлар,  мотоцикл, велосипед, хаттоки қайик ва яхталарда хам! Кўшимчасига Green wash ни кундалик хаётда: уй жихозлари, кафель , интерьер элементлари ва чарм оёқ кийимларга ишлов беришда қўллаш мумкин.
+
+
+#️⃣Green wash воситаси қўл териси учун зарарсизми?
+
+🔴Табий компонентлардан таёрлангани ва зарарли моддалардан холис бўлгани туфайли, Green wash воситаси  мутлако ➡️зарарсиз!⬅️ Булар мувофиқлик сертификатлари ❗️ва гигиеник хулосалар билан тасдиқланган.
+@suxayamoykauz");
                 Console.WriteLine(client.Name);
             }
         }

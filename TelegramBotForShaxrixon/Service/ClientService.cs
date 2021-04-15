@@ -17,7 +17,7 @@ namespace TelegramBotForShaxrixon.Service
         /// 
         /// </summary>
         /// <returns></returns>
-        public static Task<List<Client>> GetAll() =>  new DataContext().Clients.ToListAsync();
+        public static Task<List<Client>> GetAll() => new DataContext().Clients.ToListAsync();
 
 
         /// <summary>
@@ -51,5 +51,11 @@ namespace TelegramBotForShaxrixon.Service
                 throw ex;
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static async Task<int> GetCount() => new DataContext().Clients.Where(f => f.DateCreate.Value.Date == DateTime.Now.Date).Count();
     }
 }

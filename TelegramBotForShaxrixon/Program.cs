@@ -21,8 +21,8 @@ namespace TelegramBotForShaxrixon
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            TelegramBot.Start();
             GetConnection();
+            TelegramBot.Start();
             Console.WriteLine("Bot yoqildi");
             Console.ReadLine();
             Console.WriteLine("Bot Ochdi");
