@@ -472,7 +472,7 @@ namespace TelegramBotForShaxrixon
         /// <param name="e"></param>
         private static void ServiceAddOrUpdate(string[] splited, MessageEventArgs e)
         {
-            var servicess = new DataContext().Services.FirstOrDefault(f => EF.Functions.Like(f.Name, $"%{splited[1].ToLower()}%"));
+            var servicess = new DataContext().Services.FirstOrDefault(f => EF.Functions.Like(f.Name.ToLower(), $"%{splited[1].ToLower()}%"));
             if (servicess != null)
             {
 
@@ -483,6 +483,7 @@ namespace TelegramBotForShaxrixon
             var service = new Servicess();
             service.Name = splited[1];
             service.Price = Convert.ToInt32(splited[2]);
+            ServicesssDoService.AddOrUpdate(service);
         }
 
         /// <summary>
