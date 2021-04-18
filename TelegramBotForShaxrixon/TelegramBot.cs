@@ -340,7 +340,9 @@ namespace TelegramBotForShaxrixon
             var chat = await ClientService.GetByChatId(e.Message.Chat.Id);
             var company = CompanyService.GetByChatId(e.Message.Chat.Id);
             var order = await OrdersService.GetByPositionChatId(e.Message.Chat.Id, 1);
-            var tokenOrService = e.Message.Text.IndexOf("_");
+            var tokenOrService = -1;
+            if (e.Message.Text != null)
+                tokenOrService = e.Message.Text.IndexOf("_");
             //Stream read = File.OpenRead("dry.mp4");
             if (e.Message.Location != null && chat != null && order != null)
             {
@@ -615,8 +617,8 @@ namespace TelegramBotForShaxrixon
                     ordersText = ordersText + "\n" + order.ServiceModel?.Name + "\n" + "\t" + order.ServiceModel?.Name + " " + order.Count + " x" + " " + order.ServiceModel?.Price + "=" + (order.ServiceModel?.Price * order.Count);
                     if (order.SuxoyPar != null)
                     {
-                        ordersText += ordersText = "\n  " + suxoypar + " = 20000";
-                        allsum += 20000;
+                        ordersText += ordersText = "\n  " + suxoypar + " = 0";
+                        allsum += 0;
                     }
                     ordersText += "\n\n---------\n\n";
                     OrdersService.AddOrUpdate(new Orders() { Id = order.Id, ChatId = order.ChatId, ServiceId = order.ServiceId, Longitude = order.Longitude, Lotetude = order.Lotetude, Position = 2, DateOrder = order.DateOrder, Count = order.Count });
