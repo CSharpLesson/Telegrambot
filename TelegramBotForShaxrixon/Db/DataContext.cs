@@ -29,7 +29,7 @@ namespace TelegramBotForShaxrixon.Db
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseNpgsql(Program.DataCon);
-        }        
+        }
 
         /// <summary>
         /// 
@@ -55,5 +55,10 @@ namespace TelegramBotForShaxrixon.Db
         /// 
         /// </summary>
         public DbSet<Language> Languages { get; set; }
-    }   
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public DbSet<TelegramBotToken> TelegramBotToken { get; set; }
+    }
 }

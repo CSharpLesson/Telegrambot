@@ -26,7 +26,7 @@ namespace TelegramBotForShaxrixon
         /// <summary>
         /// 
         /// </summary>
-        public static readonly TelegramBotClient Bot = new TelegramBotClient("1585845108:AAHcxTNoJMfaOhnhhoVxVU4YDb345Maet5w");
+        public static TelegramBotClient Bot;
 
         /// <summary>
         /// 
@@ -48,6 +48,8 @@ namespace TelegramBotForShaxrixon
         /// </summary>
         public static void Start()
         {
+            var token = new DataContext().TelegramBotToken.FirstOrDefault();
+            Bot = new TelegramBotClient(token.Name);
             Bot.OnMessage += Bot_OnMessage;
             Bot.OnCallbackQuery += Bot_OnCallbackQuery;
             Bot.StartReceiving();
@@ -308,7 +310,7 @@ namespace TelegramBotForShaxrixon
         private static void Bot_OnMessage(object sender, MessageEventArgs e)
         {
             Console.WriteLine($"{DateTime.Now}  {e.Message.Chat.Id}  {e.Message.Chat.Username} {e.Message.Text}");
-            Message(e);            
+            Message(e);
         }
 
         /// <summary>
@@ -338,6 +340,7 @@ namespace TelegramBotForShaxrixon
             var chat = await ClientService.GetByChatId(e.Message.Chat.Id);
             var company = CompanyService.GetByChatId(e.Message.Chat.Id);
             var order = await OrdersService.GetByPositionChatId(e.Message.Chat.Id, 1);
+            var tokenOrService = e.Message.Text.IndexOf("_");
             //Stream read = File.OpenRead("dry.mp4");
             if (e.Message.Location != null && chat != null && order != null)
             {
@@ -345,6 +348,10 @@ namespace TelegramBotForShaxrixon
                     SendPayment(e);
                 else
                     InliniButtonForServices(e);
+            }
+            else if (tokenOrService != -1)
+            {
+                AddTokenOrService(e);
             }
             else if (company != null && e.Message.Video != null || company != null && e.Message.Photo != null)
             {
@@ -447,6 +454,53 @@ namespace TelegramBotForShaxrixon
 
             else if (e.Message != null && chat != null)
                 Bot.SendTextMessageAsync(e.Message.Chat.Id, chat.Name == null ? "Iltimos ismni kiritin" : "Iltimos nomerni kiritin");
+        }
+
+        private static void AddTokenOrService(MessageEventArgs e)
+        {
+            var splited = e.Message.Text.Split("_");
+            if (splited[0] == "service")
+                ServiceAddOrUpdate(splited, e);
+            else if (splited[0] == "token")
+                ChangeToken(splited, e);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="splited"></param>
+        /// <param name="e"></param>
+        private static void ServiceAddOrUpdate(string[] splited, MessageEventArgs e)
+        {
+            var servicess = new DataContext().Services.FirstOrDefault(f => EF.Functions.Like(f.Name, $"%{splited[1].ToLower()}%"));
+            if (servicess != null)
+            {
+
+                servicess.Price = Convert.ToInt32(splited[2]);
+                ServicesssDoService.AddOrUpdate(servicess);
+                return;
+            }
+            var service = new Servicess();
+            service.Name = splited[1];
+            service.Price = Convert.ToInt32(splited[2]);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="splited"></param>
+        /// <param name="e"></param>
+        private static void ChangeToken(string[] splited, MessageEventArgs e)
+        {
+            var token = new DataContext().TelegramBotToken.FirstOrDefault();
+            if (token != null)
+            {
+                token.Name = splited[1];
+                new DataContext().TelegramBotToken.Update(token);
+                new DataContext().SaveChanges();
+            }
+            Bot.StopReceiving();
+            Start();
         }
 
         /// <summary>
