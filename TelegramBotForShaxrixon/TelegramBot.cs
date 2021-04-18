@@ -26,7 +26,7 @@ namespace TelegramBotForShaxrixon
         /// <summary>
         /// 
         /// </summary>
-        public static readonly TelegramBotClient Bot = new TelegramBotClient("1438242785:AAHF1S3HVs2B0OMYy36BkD8pmPfyFGAcvzs");
+        public static readonly TelegramBotClient Bot = new TelegramBotClient("1585845108:AAHcxTNoJMfaOhnhhoVxVU4YDb345Maet5w");
 
         /// <summary>
         /// 
@@ -51,6 +51,7 @@ namespace TelegramBotForShaxrixon
             Bot.OnMessage += Bot_OnMessage;
             Bot.OnCallbackQuery += Bot_OnCallbackQuery;
             Bot.StartReceiving();
+            //SendAllUsersMessage();
         }
 
         /// <summary>
@@ -307,7 +308,7 @@ namespace TelegramBotForShaxrixon
         private static void Bot_OnMessage(object sender, MessageEventArgs e)
         {
             Console.WriteLine($"{DateTime.Now}  {e.Message.Chat.Id}  {e.Message.Chat.Username} {e.Message.Text}");
-            Message(e);
+            Message(e);            
         }
 
         /// <summary>
@@ -318,74 +319,101 @@ namespace TelegramBotForShaxrixon
         static async Task Message(MessageEventArgs e)
         {
             try
-            {                
-                var chat = await ClientService.GetByChatId(e.Message.Chat.Id);                
-                var order = await OrdersService.GetByPositionChatId(e.Message.Chat.Id, 1);
-                //Stream read = File.OpenRead("dry.mp4");
-                if (e.Message.Location != null && chat != null && order != null)
-                {
-                    if (order.Longitude == null && order.Longitude == null)
-                        SendPayment(e);
-                    else
-                        InliniButtonForServices(e);
-                }
-                else if (e.Message.Text == "/start" && chat == null)
-                {
+            {
+                await TryMessage(e);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(DateTime.Now + " " + ex);
+            }
+        }
 
-                    var firstmessage = "Biz sizga kim deb murojaat qilsak bo’ladi?\n Как мы можем обратиться к вам?";
-                    //Bot.SendVideoAsync(e.Message.Chat.Id, video: read, caption: "Dry car washing");
-                    ClientService.AddOrUpdate(new Client() { ChatId = e.Message.Chat.Id });
-                    Bot.SendTextMessageAsync(e.Message.Chat.Id, firstmessage);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private static async Task TryMessage(MessageEventArgs e)
+        {
+            var chat = await ClientService.GetByChatId(e.Message.Chat.Id);
+            var company = CompanyService.GetByChatId(e.Message.Chat.Id);
+            var order = await OrdersService.GetByPositionChatId(e.Message.Chat.Id, 1);
+            //Stream read = File.OpenRead("dry.mp4");
+            if (e.Message.Location != null && chat != null && order != null)
+            {
+                if (order.Longitude == null && order.Longitude == null)
+                    SendPayment(e);
+                else
+                    InliniButtonForServices(e);
+            }
+            else if (company != null && e.Message.Video != null || company != null && e.Message.Photo != null)
+            {
+                SendPhotoOrVideo(e);
+            }
+            else if (e.Message.Text == "/start" && chat == null)
+            {
 
-                }
-                else if (e.Message.Text != "/start" && chat == null)
-                    Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos /start ni bosing");
+                var firstmessage = "Biz sizga kim deb murojaat qilsak bo’ladi?\n Как мы можем обратиться к вам?";
+                //Bot.SendVideoAsync(e.Message.Chat.Id, video: read, caption: "Dry car washing");
+                ClientService.AddOrUpdate(new Client() { ChatId = e.Message.Chat.Id });
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, firstmessage);
 
-                else if (e.Message.Text == "/info")
-                    Bot.SendTextMessageAsync(e.Message.Chat.Id, "Call center \nTelefon: \n +998 95 001 07 99 \n \n Телефон: \n +998 95 001 07 99");
-                else if (e.Message.Text == "/start" && chat.Name == null)
-                    Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos telefon ism ni kiriting!");
+            }
+            else if (e.Message.Text == "/todayPeople" && company != null)
+            {
+                var count = await ClientService.GetCount();
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, count != 0 ? "Bugungi qo'shilgan odamlar - " + count : "Bugun odam qo'shilmagan");
+            }
+            else if (e.Message.Text != "/start" && chat == null)
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos /start ni bosing");
 
-                else if (e.Message.Text == "/start" && chat.Phone == null)
-                    Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos telefon nomer ni kiriting!");
+            else if (e.Message.Text == "/info")
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, "Call center \nTelefon: \n +998 95 001 07 99 \n \n Телефон: \n +998 95 001 07 99");
+            else if (e.Message.Text == "/start" && chat.Name == null)
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos telefon ism ni kiriting!");
 
-                else if (e.Message.Contact != null && chat.Phone == null)
-                {
-                    var random = new Random().Next(10000, 99999);
-                    ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = chat.Name, Phone = e.Message.Contact.PhoneNumber, ChatId = e.Message.Chat.Id, IsActive = false, GenerateCode = random });
-                    SendSMSForClient(e);
-                    Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos Kodni kiriting! \n \n Пожалуйста, введите код", replyMarkup: new ReplyKeyboardRemove());
-                }
-                else if (e.Message.Text == "/changenumber") 
-                {
-                    ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = chat.Name , ChatId = e.Message.Chat.Id });
-                    var secondmessage = "Ro'yxatdan o'tish uchun telefon raqamingizni kiriting \nRaqamni 901234567 shaklida yuboring. \n \n Введите свой номер телефона для регистрации \nОтправьте номер в форме 901234567.";
-                    var RequestReplyKeyboard = new ReplyKeyboardMarkup(new[]// bu yerda location qabul qilish ishlatilvotdi
-                            {
+            else if (e.Message.Text == "/start" && chat.Phone == null)
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos telefon nomer ni kiriting!");
+
+            else if (e.Message.Contact != null && chat.Phone == null)
+            {
+                var random = new Random().Next(10000, 99999);
+                ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = chat.Name, Phone = e.Message.Contact.PhoneNumber, ChatId = e.Message.Chat.Id, IsActive = false, GenerateCode = random });
+                SendSMSForClient(e);
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos Kodni kiriting! \n \n Пожалуйста, введите код", replyMarkup: new ReplyKeyboardRemove());
+            }
+            else if (e.Message.Text == "/changenumber")
+            {
+                ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = chat.Name, ChatId = e.Message.Chat.Id });
+                var secondmessage = "Ro'yxatdan o'tish uchun telefon raqamingizni kiriting \nRaqamni 901234567 shaklida yuboring. \n \n Введите свой номер телефона для регистрации \nОтправьте номер в форме 901234567.";
+                var RequestReplyKeyboard = new ReplyKeyboardMarkup(new[]// bu yerda location qabul qilish ishlatilvotdi
+                        {
                             new KeyboardButton("📱 Contact") { RequestContact = true }
                         });
-                    RequestReplyKeyboard.ResizeKeyboard = true;
-                    RequestReplyKeyboard.OneTimeKeyboard = true;
+                RequestReplyKeyboard.ResizeKeyboard = true;
+                RequestReplyKeyboard.OneTimeKeyboard = true;
 
-                    Bot.SendTextMessageAsync(e.Message.Chat.Id, secondmessage, ParseMode.Default, false, false, 0, RequestReplyKeyboard);
-                }
-                else if (chat.Name == null)
-                {
-                    ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = e.Message.Text, ChatId = e.Message.Chat.Id });
-                    var secondmessage = "Ro'yxatdan o'tish uchun telefon raqamingizni kiriting \nRaqamni 901234567 shaklida yuboring. \n \n Введите свой номер телефона для регистрации \nОтправьте номер в форме 901234567.";
-                    var RequestReplyKeyboard = new ReplyKeyboardMarkup(new[]// bu yerda location qabul qilish ishlatilvotdi
-                            {
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, secondmessage, ParseMode.Default, false, false, 0, RequestReplyKeyboard);
+            }
+            else if (chat.Name == null)
+            {
+                ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = e.Message.Text, ChatId = e.Message.Chat.Id });
+                var secondmessage = "Ro'yxatdan o'tish uchun telefon raqamingizni kiriting \nRaqamni 901234567 shaklida yuboring. \n \n Введите свой номер телефона для регистрации \nОтправьте номер в форме 901234567.";
+                var RequestReplyKeyboard = new ReplyKeyboardMarkup(new[]// bu yerda location qabul qilish ishlatilvotdi
+                        {
                             new KeyboardButton("📱 Contact") { RequestContact = true }
                         });
-                    RequestReplyKeyboard.ResizeKeyboard = true;
-                    RequestReplyKeyboard.OneTimeKeyboard = true;
+                RequestReplyKeyboard.ResizeKeyboard = true;
+                RequestReplyKeyboard.OneTimeKeyboard = true;
 
-                    Bot.SendTextMessageAsync(e.Message.Chat.Id, secondmessage, ParseMode.Default, false, false, 0, RequestReplyKeyboard);
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, secondmessage, ParseMode.Default, false, false, 0, RequestReplyKeyboard);
 
-                }
-                else if (chat.Phone == null)
+            }
+            else if (chat.Phone == null)
+            {
+                try
                 {
-                    try
+                    if (e.Message.Text.Length == 9)
                     {
                         var random = new Random().Next(10000, 99999);
                         var phone = Convert.ToInt32(e.Message.Text);
@@ -393,31 +421,62 @@ namespace TelegramBotForShaxrixon
                         Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos kodni kiriting! \nПожалуйста, введите код!");
                         SendSMSForClient(e);
                     }
-                    catch
+                    else
                     {
                         var secondmessage = "Telefon raqam noto'g'ri kiritildi \n Raqamni 901234567 shaklida yuboring!";
                         Bot.SendTextMessageAsync(e.Message.From.Id, secondmessage);
                     }
                 }
-                else if (chat.IsActive == false && chat.GenerateCode.ToString() == e.Message.Text)
+                catch
                 {
-                    ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = chat.Name, Phone = chat.Phone, GenerateCode = chat.GenerateCode, ChatId = e.Message.Chat.Id, IsActive = true });
-                    InliniButtonForServices(e);
+                    var secondmessage = "Telefon raqam noto'g'ri kiritildi \n Raqamni 901234567 shaklida yuboring!";
+                    Bot.SendTextMessageAsync(e.Message.From.Id, secondmessage);
                 }
-                else if (chat.IsActive == true)
-                    InliniButtonForServices(e);
+            }
+            else if (chat.IsActive == false && chat.GenerateCode.ToString() == e.Message.Text)
+            {
+                ClientService.AddOrUpdate(new Client() { Id = chat.Id, Name = chat.Name, Phone = chat.Phone, GenerateCode = chat.GenerateCode, ChatId = e.Message.Chat.Id, IsActive = true, DateCreate = DateTime.Now.Date });
+                InliniButtonForServices(e);
+            }
+            else if (chat.IsActive == true)
+                InliniButtonForServices(e);
 
 
-                else if (chat.IsActive == false && chat.GenerateCode.ToString() != e.Message.Text)
-                    Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos kodni to'g'ri kiriting!");
+            else if (chat.IsActive == false && chat.GenerateCode.ToString() != e.Message.Text)
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, "Iltimos kodni to'g'ri kiriting!");
 
-                else if (e.Message != null && chat != null)
-                    Bot.SendTextMessageAsync(e.Message.Chat.Id, chat.Name == null ? "Iltimos ismni kiritin" : "Iltimos nomerni kiritin");
+            else if (e.Message != null && chat != null)
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, chat.Name == null ? "Iltimos ismni kiritin" : "Iltimos nomerni kiritin");
+        }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        private static async Task SendPhotoOrVideo(MessageEventArgs e)
+        {
+            try
+            {
+                TrySendPhotoOrVideo(e);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(DateTime.Now + " " + ex);
+                Console.WriteLine(ex.Message + " " + e.Message.Chat.Id);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private static async Task TrySendPhotoOrVideo(MessageEventArgs e)
+        {
+            var clients = await ClientService.GetAll();
+            foreach (var client in clients)
+            {
+                Bot.ForwardMessageAsync(client.ChatId, e.Message.Chat.Id, e.Message.MessageId);
+                Console.WriteLine(client.Name);
             }
         }
 
@@ -429,28 +488,33 @@ namespace TelegramBotForShaxrixon
         {
             try
             {
-                var clients = await ClientService.GetByChatId(e.Message.Chat.Id);
-                var client = new System.Net.Http.HttpClient();
-                if (clients.Phone.Length >= 12)
-                {
-                    var link = $"https://developer.apix.uz/index.php?app=ws&u=d55hh&h=54909e71275b7003c2e0bb00b643938c&op=pv&to=" + clients.Phone + "&msg=Kod+" + clients.GenerateCode;
-                    Console.WriteLine(link);
-                    var result = await client.GetAsync(link);
-                }
-                else if (clients.Phone.Length <= 12)
-                {
-                    var link = $"https://developer.apix.uz/index.php?app=ws&u=d55hh&h=54909e71275b7003c2e0bb00b643938c&op=pv&to=998" + clients.Phone + "&msg=Kod+" + clients.GenerateCode;
-                    Console.WriteLine(link);
-                    var result = await client.GetAsync(link);
-                }
+                await TrySendSMSForClient(e);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(DateTime.Now + " " + ex);
             }
-
-
         }
+
+        private static async Task TrySendSMSForClient(MessageEventArgs e)
+        {
+            var clients = await ClientService.GetByChatId(e.Message.Chat.Id);
+            var client = new System.Net.Http.HttpClient();
+            if (clients.Phone.Length >= 12)
+            {
+                var link = $"https://developer.apix.uz/index.php?app=ws&u=d55hh&h=54909e71275b7003c2e0bb00b643938c&op=pv&to=" + clients.Phone + "&msg=Kod+" + clients.GenerateCode;
+                Console.WriteLine(link);
+                var result = await client.GetAsync(link);
+            }
+            else if (clients.Phone.Length <= 12)
+            {
+                var link = $"https://developer.apix.uz/index.php?app=ws&u=d55hh&h=54909e71275b7003c2e0bb00b643938c&op=pv&to=998" + clients.Phone + "&msg=Kod+" + clients.GenerateCode;
+                Console.WriteLine(link);
+                var result = await client.GetAsync(link);
+            }
+        }
+
+
 
         /// <summary>
         /// 
@@ -461,60 +525,70 @@ namespace TelegramBotForShaxrixon
         {
             try
             {
-                var lang = new DataContext().Languages.FirstOrDefault(f => f.ChatId == e.CallbackQuery.From.Id);
-                var langId = lang != null ? lang.LanguageId : 1;
-                var orders = await OrdersService.GetByPositionChatIdDate(e.CallbackQuery.From.Id, 1);
-                if (orders != null)
-                {
-                    string suxoypar = langId == 1 ? "💨Suxoy tuman" : "💨Сухой пар";
-                    string naqt = langId == 1 ? "💵 Naqd to'lash" : "💵 Платить наличными";
-                    string card = langId == 1 ? "💳 Karta raqam orqali to'lash" : "💳 Оплата по номеру карты";
-                    string cardNum = langId == 1 ? "Karta raqam:" : "Номер карты:";
-                    var texts = e.CallbackQuery.Data == "paynaqt" ? "💵 Naqd to'lash" : "💳 Karta raqam orqali to'lash";
-                    var textForClient = e.CallbackQuery.Data == "paynaqt" ? "" : "";
-                    double allsum = 0;
-                    var ordersText = "";
-                    var client = await ClientService.GetByChatId(e.CallbackQuery.From.Id);
-                    foreach (var order in orders)
-                    {
-                        allsum = allsum + (order.ServiceModel?.Price * order.Count).Value;
-                        ordersText = ordersText + "\n" + order.ServiceModel?.Name + "\n" + "\t" + order.ServiceModel?.Name + " " + order.Count + " x" + " " + order.ServiceModel?.Price + "=" + (order.ServiceModel?.Price * order.Count);
-                        if (order.SuxoyPar != null)
-                        {
-                            ordersText += ordersText = "\n  " + suxoypar + " = 20000";
-                            allsum += 20000;
-                        }
-                        ordersText += "\n\n---------\n\n";
-                        OrdersService.AddOrUpdate(new Orders() { Id = order.Id, ChatId = order.ChatId, ServiceId = order.ServiceId, Longitude = order.Longitude, Lotetude = order.Lotetude, Position = 2, DateOrder = order.DateOrder, Count = order.Count });
-                    }
-                    ordersText = ordersText + "Umumiy: " + allsum + " so'm";
-                    var companys = CompanyService.GetAll();
-                    foreach (var item in companys)
-                    {
-                        string text = $"Klient- {client.Name} Telefon nomeri- {client.Phone}" + "\n" + ordersText + "\n --------- \n To'lov turi: " + texts;
-                        Bot.SendTextMessageAsync(item.ChatId, text);
-                        var longetude = float.Parse(orders.FirstOrDefault().Longitude);
-                        var lotetude = float.Parse(orders.FirstOrDefault().Lotetude);
-                        Bot.SendLocationAsync(item.ChatId, lotetude, longetude);
-                    }
-                    var RequestReplyKeyboard = new ReplyKeyboardMarkup(new[] { new KeyboardButton() });
-                    ordersText = ordersText + "\n \n" + textForClient;
-                    var inline = new InlineKeyboardMarkup(new[] { new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "Ish yakunlandi" : "Работа завершена", "done") } });
-                    Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, ordersText, replyMarkup: inline);
-
-                }
-                else
-                {
-                    InliniButtonForServices(e);
-                }
+                await TrySendToCompany(e);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(DateTime.Now + " " + e.CallbackQuery.From.Id + " " + ex);
             }
-
-
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private static async Task TrySendToCompany(CallbackQueryEventArgs e)
+        {
+            var lang = new DataContext().Languages.FirstOrDefault(f => f.ChatId == e.CallbackQuery.From.Id);
+            var langId = lang != null ? lang.LanguageId : 1;
+            var orders = await OrdersService.GetByPositionChatIdDate(e.CallbackQuery.From.Id, 1);
+            if (orders != null)
+            {
+                string suxoypar = langId == 1 ? "💨Suxoy tuman" : "💨Сухой пар";
+                string naqt = langId == 1 ? "💵 Naqd to'lash" : "💵 Платить наличными";
+                string card = langId == 1 ? "💳 Karta raqam orqali to'lash" : "💳 Оплата по номеру карты";
+                string cardNum = langId == 1 ? "Karta raqam:" : "Номер карты:";
+                var texts = e.CallbackQuery.Data == "paynaqt" ? "💵 Naqd to'lash" : "💳 Karta raqam orqali to'lash";
+                var textForClient = e.CallbackQuery.Data == "paynaqt" ? "" : "";
+                double allsum = 0;
+                var ordersText = "";
+                var client = await ClientService.GetByChatId(e.CallbackQuery.From.Id);
+                foreach (var order in orders)
+                {
+                    allsum = allsum + (order.ServiceModel?.Price * order.Count).Value;
+                    ordersText = ordersText + "\n" + order.ServiceModel?.Name + "\n" + "\t" + order.ServiceModel?.Name + " " + order.Count + " x" + " " + order.ServiceModel?.Price + "=" + (order.ServiceModel?.Price * order.Count);
+                    if (order.SuxoyPar != null)
+                    {
+                        ordersText += ordersText = "\n  " + suxoypar + " = 20000";
+                        allsum += 20000;
+                    }
+                    ordersText += "\n\n---------\n\n";
+                    OrdersService.AddOrUpdate(new Orders() { Id = order.Id, ChatId = order.ChatId, ServiceId = order.ServiceId, Longitude = order.Longitude, Lotetude = order.Lotetude, Position = 2, DateOrder = order.DateOrder, Count = order.Count });
+                }
+                ordersText = ordersText + "Umumiy: " + allsum + " so'm";
+                var companys = CompanyService.GetAll();
+                foreach (var item in companys)
+                {
+                    string text = $"Klient- {client.Name} Telefon nomeri- {client.Phone}" + "\n" + ordersText + "\n --------- \n To'lov turi: " + texts;
+                    Bot.SendTextMessageAsync(item.ChatId, text);
+                    var longetude = float.Parse(orders.FirstOrDefault().Longitude);
+                    var lotetude = float.Parse(orders.FirstOrDefault().Lotetude);
+                    Bot.SendLocationAsync(item.ChatId, lotetude, longetude);
+                }
+                var RequestReplyKeyboard = new ReplyKeyboardMarkup(new[] { new KeyboardButton() });
+                ordersText = ordersText + "\n \n" + textForClient;
+                var inline = new InlineKeyboardMarkup(new[] { new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "Ish yakunlandi" : "Работа завершена", "done") } });
+                Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, messageId: e.CallbackQuery.Message.MessageId, ordersText, replyMarkup: inline);
+
+            }
+            else
+            {
+                InliniButtonForServices(e);
+            }
+        }
+
+
 
         /// <summary>
         /// 
@@ -525,33 +599,41 @@ namespace TelegramBotForShaxrixon
         {
             try
             {
-                var lang = new DataContext().Languages.FirstOrDefault(f => f.ChatId == e.Message.Chat.Id);
-                var langId = lang != null ? lang.LanguageId : 1;
-                var orders = await OrdersService.GetByPositionChatIdDate(e.Message.From.Id, 1);
-                if (orders != null)
-                {
-                    foreach (var order in orders)
-                    {
-                        OrdersService.AddOrUpdate(new Orders() { Id = order.Id, ChatId = order.ChatId, ServiceId = order.ServiceId, Longitude = e.Message.Location.Longitude.ToString(), Lotetude = e.Message.Location.Latitude.ToString(), Position = 1, DateOrder = order.DateOrder, Count = order.Count, SuxoyPar = order.SuxoyPar });
-                    }
-
-                    await Bot.SendTextMessageAsync(e.Message.Chat.Id, langId == 1 ? "Bizda samarali to'lov turlari bor" : "У нас есть эффективные способы оплаты", replyMarkup: new ReplyKeyboardRemove());
-                    var inline = new InlineKeyboardMarkup(new[] {
-                    new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "💵 Naqd  to'lov" : "💵 Платить наличными", "paynaqt") },
-                    new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "💳 Karta raqam orqali to'lash": "💳 Оплата по номеру карты", "paycard") },
-                });
-                    Bot.SendTextMessageAsync(e.Message.Chat.Id, langId == 1 ? "To'lov turini tanlang" : "Выберите способ оплаты", replyMarkup: inline);
-
-                }
-                else
-                    InliniButtonForServices(e);
-
-
+                await TrySendPayment(e);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(DateTime.Now + " " + e.Message.Chat.Id + " " + ex);
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private static async Task TrySendPayment(MessageEventArgs e)
+        {
+            var lang = new DataContext().Languages.FirstOrDefault(f => f.ChatId == e.Message.Chat.Id);
+            var langId = lang != null ? lang.LanguageId : 1;
+            var orders = await OrdersService.GetByPositionChatIdDate(e.Message.From.Id, 1);
+            if (orders != null)
+            {
+                foreach (var order in orders)
+                {
+                    OrdersService.AddOrUpdate(new Orders() { Id = order.Id, ChatId = order.ChatId, ServiceId = order.ServiceId, Longitude = e.Message.Location.Longitude.ToString(), Lotetude = e.Message.Location.Latitude.ToString(), Position = 1, DateOrder = order.DateOrder, Count = order.Count, SuxoyPar = order.SuxoyPar });
+                }
+
+                await Bot.SendTextMessageAsync(e.Message.Chat.Id, langId == 1 ? "Bizda samarali to'lov turlari bor" : "У нас есть эффективные способы оплаты", replyMarkup: new ReplyKeyboardRemove());
+                var inline = new InlineKeyboardMarkup(new[] {
+                    new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "💵 Naqd  to'lov" : "💵 Платить наличными", "paynaqt") },
+                    new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "💳 Karta raqam orqali to'lash": "💳 Оплата по номеру карты", "paycard") },
+                });
+                Bot.SendTextMessageAsync(e.Message.Chat.Id, langId == 1 ? "To'lov turini tanlang" : "Выберите способ оплаты", replyMarkup: inline);
+
+            }
+            else
+                InliniButtonForServices(e);
         }
 
         /// <summary>
@@ -572,35 +654,7 @@ namespace TelegramBotForShaxrixon
         {
             try
             {
-                var lang = await new DataContext().Languages.FirstOrDefaultAsync(f => f.ChatId == chatId);                
-                var langId = lang != null ? lang.LanguageId : 1;                
-                var services = await ServicesssDoService.GetAll();                
-                services = services.OrderBy(f => f.Id).ToList();
-                var inlines = new List<InlineKeyboardButton[]>();
-                
-                for (int i = 0; i < services.Count; i++)
-                {
-                    if (i + 1 >= services.Count)
-                    {
-                        inlines.Add(new[] { InlineKeyboardButton.WithCallbackData($"{ services[i].Name } - {services[i].Price}", services[i].Id.ToString()) });
-                    }
-                    else
-                    {
-                        inlines.Add(new[] { InlineKeyboardButton.WithCallbackData($"{ services[i].Name } - {services[i].Price}", services[i].Id.ToString()), InlineKeyboardButton.WithCallbackData($"{ services[i + 1].Name } - {services[i + 1].Price}", services[i + 1].Id.ToString()) });
-                    }
-                    i++;
-                }
-                
-                inlines.Add(new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "🧾 Buyurtma berish" : "🧾 Заказать", "order") });
-                inlines.Add(new[] { InlineKeyboardButton.WithCallbackData("Tilni o'zgartirish/Изменить язык", "setLang") });                
-                var inlineKeyboard = new InlineKeyboardMarkup(inlines);
-                
-
-                if (messageId == 0)
-                    await Bot.SendTextMessageAsync(chatId, langId == 1 ? "Iltimos xizmat turini tanlang" : "Пожалуйста, выберите тип услуги", replyMarkup: inlineKeyboard);
-                else
-                    await Bot.EditMessageTextAsync(chatId, messageId, langId == 1 ? "Iltimos xizmat turini tanlang" : "Пожалуйста, выберите тип услуги", replyMarkup: inlineKeyboard);                
-
+                TryInliniButtonForServices(chatId, messageId);
             }
             catch (Exception ex)
             {
@@ -611,12 +665,50 @@ namespace TelegramBotForShaxrixon
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="chatId"></param>
+        /// <param name="messageId"></param>
+        /// <returns></returns>
+        private static async Task TryInliniButtonForServices(long chatId, int messageId)
+        {
+            var lang = await new DataContext().Languages.FirstOrDefaultAsync(f => f.ChatId == chatId);
+            var langId = lang != null ? lang.LanguageId : 1;
+            var services = await ServicesssDoService.GetAll();
+            services = services.OrderBy(f => f.Id).ToList();
+            var inlines = new List<InlineKeyboardButton[]>();
+
+            for (int i = 0; i < services.Count; i++)
+            {
+                if (i + 1 >= services.Count)
+                {
+                    inlines.Add(new[] { InlineKeyboardButton.WithCallbackData($"{ services[i].Name } - {services[i].Price}", services[i].Id.ToString()) });
+                }
+                else
+                {
+                    inlines.Add(new[] { InlineKeyboardButton.WithCallbackData($"{ services[i].Name } - {services[i].Price}", services[i].Id.ToString()), InlineKeyboardButton.WithCallbackData($"{ services[i + 1].Name } - {services[i + 1].Price}", services[i + 1].Id.ToString()) });
+                }
+                i++;
+            }
+
+            inlines.Add(new[] { InlineKeyboardButton.WithCallbackData(langId == 1 ? "🧾 Buyurtma berish" : "🧾 Заказать", "order") });
+            inlines.Add(new[] { InlineKeyboardButton.WithCallbackData("Tilni o'zgartirish/Изменить язык", "setLang") });
+            var inlineKeyboard = new InlineKeyboardMarkup(inlines);
+
+
+            if (messageId == 0)
+                await Bot.SendTextMessageAsync(chatId, langId == 1 ? "Iltimos xizmat turini tanlang" : "Пожалуйста, выберите тип услуги", replyMarkup: inlineKeyboard);
+            else
+                await Bot.EditMessageTextAsync(chatId, messageId, langId == 1 ? "Iltimos xizmat turini tanlang" : "Пожалуйста, выберите тип услуги", replyMarkup: inlineKeyboard);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
         private async static Task InliniButtonForServices(CallbackQueryEventArgs e)
         {
             var order = await OrdersService.GetByPositionChatIdDate(e.CallbackQuery.From.Id, 2);
-            if (e.CallbackQuery.Data == "done") 
+            if (e.CallbackQuery.Data == "done")
             {
                 Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, e.CallbackQuery.Message.MessageId, "✅");
                 InliniButtonForServices(e.CallbackQuery.From.Id, 0);
@@ -625,7 +717,6 @@ namespace TelegramBotForShaxrixon
                 InliniButtonForServices(e.CallbackQuery.From.Id, e.CallbackQuery.Message.MessageId);
             else
                 IshTugadimi(e);
-
         }
 
         /// <summary>
@@ -746,5 +837,61 @@ namespace TelegramBotForShaxrixon
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public async static void SendAllUsersMessage()
+        {
+            var clients = await ClientService.GetAll();
+            foreach (var client in clients)
+            {
+
+                Bot.SendTextMessageAsync(client.ChatId, @"Азиз дўстлар, бу рубрикамизда биз энг кўп бериладиган саволларга жавоб бердик😊
+
+❇️Green wash ўзи нима?
+
+➡️Бу уникал  восита хисобланиб машинани  3 босқичда  тозаланилишда қўлланилади 
+Булар:⬇️
+ 1️⃣. Green wash восита билан          машинани қамраш.
+ 2️⃣. Кирни юмшоқ  мато билан йўқотиш (микрофибра сочиқларини  кўллаш шарт!)
+ 3️⃣. Тоза мато билан блеск пайдо бўлгунича артиш
+
+♻️Бу қандай ишлайди❔
+
+✅Машинанинг  кир юзасига тушиб, Green wash актив моддалари ишга тушади ва машина устидаги ифлосланишларни йўқотади.
+↪️Ундан сўнг, воситанинг суртилувчи нано-агентлари машинанинг бўёқ кисмига кириб бор ифлосланишни чиқариб ташлайди.
+↪️Полировка жараёнида , ишлов берилаётган юзаликдаги махсус моддалар полимерлашади ва мустахкам химоя қатламига айланади. Полимернинг айнан шу қатлами машинанинг юзасига блеск бериб туради ва музлашга карши реагентлар, хамда ултрабинафша нурлари, кислота чўкмаларидан мустахкам химоя хосил қилади.
+
+🔓🔓🔓
+Нега машина юзасига зарар етказмайди?
+
+Green wash автомобилни сувсиз тозалаш усулини қўллаганда машина юзасига зарар етқазиши мумкин бўлган барча қаттик юзаликлар полимер микро капсулаларига қамраб олинади.
+Ёрдамчи элементлар эса, уларни машина юзасидан буёқни шикастламай тозалашга хизмат қилади
+
+⏳Бир машинани тозалаш🛁  учун қанча миқдорда Green wash махсулоти керак?
+
+⌛️Green wash махсулотининг бир флакони, 🧴яъни 0.5 литри ўртача седанни 3 марта ювиб, блеск беришга етади.
+☘️Умуман олганда махсулот сарфланиши машина катталиги ва ифлосланиш даражасига боғлиқ. Ундан ташқари воситани биринчи маротаба қўллаганингизда кейинги жараёнлардан кўра купроқ сарфланади. 😍
+Бу ерда тажрибасизлик ўз сўзини айтади! Энг мухими шуки ✔️Green wash воситаси ёрдамида бир бор тозаланган машина юзасида (кузовида)  химоя қатлами хосил бўлади ва бу машинани камроқ ифлосланишига хизмат қилади
+☑️☑️☑️ Асосийси осон ювилади 🚿✨
+
+💚💚💚💚Green wash сувсиз тозалаш воситасининг универсаллиги нимада?
+
+❣️Восита универсаллиги шундаки, сиз уни олганда шунчаки тозалаш учун воситага эга бўлиб колмайсиз. Сиз универсал тозалаш тизимини қўлга киритасиз. 
+Агарда⏳❌вактингиз тиғиз булиб, машинани ювишни  хохламасангиз - воситани шунчаки унинг юзасига сепиб, микрофибра сочиқ ёрдамида артиб чиқишингиз керак бўлади (20-30 мин вақт кетади)
+
+📎🧾 Кандай юзаликларда қўллаш мумкин?
+
+Деярли барча қаттиқ юзаликларда: машинанинг бўёқ қатлами, пластик, хром, резина, чарм( кожа), алюминий, зангламас пўлат. 
+Воситани жуда кенг тармоқларда қўллаш мумкин, масалан скутерлар,  мотоцикл, велосипед, хаттоки қайик ва яхталарда хам! Кўшимчасига Green wash ни кундалик хаётда: уй жихозлари, кафель , интерьер элементлари ва чарм оёқ кийимларга ишлов беришда қўллаш мумкин.
+
+
+#️⃣Green wash воситаси қўл териси учун зарарсизми?
+
+🔴Табий компонентлардан таёрлангани ва зарарли моддалардан холис бўлгани туфайли, Green wash воситаси  мутлако ➡️зарарсиз!⬅️ Булар мувофиқлик сертификатлари ❗️ва гигиеник хулосалар билан тасдиқланган.
+@suxayamoykauz");
+                Console.WriteLine(client.Name);
+            }
+        }
     }
 }

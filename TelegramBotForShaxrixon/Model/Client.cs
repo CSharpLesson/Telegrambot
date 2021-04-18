@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TelegramBotForShaxrixon.Model
 {
@@ -34,6 +35,12 @@ namespace TelegramBotForShaxrixon.Model
         /// </summary>
         [Column("isactive")]
         public bool? IsActive { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [Column("datecreate")]
+        public DateTime? DateCreate { get; set; }
 
         /// <summary>
         /// 
