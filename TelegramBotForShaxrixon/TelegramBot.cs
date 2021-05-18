@@ -47,9 +47,10 @@ namespace TelegramBotForShaxrixon
         /// 
         /// </summary>
         public static void Start()
-        {
-            var token = new DataContext().TelegramBotToken.FirstOrDefault();
-            Bot = new TelegramBotClient(token.Name);
+        {            
+            Bot = new TelegramBotClient("1585845108:AAE5M7iyjQxy-7pbGpLGDgXqtYmLcvtEvTA");
+            var me = Bot.GetMeAsync().Result;
+            Console.WriteLine(me.Username);
             Bot.OnMessage += Bot_OnMessage;
             Bot.OnCallbackQuery += Bot_OnCallbackQuery;
             Bot.StartReceiving();
